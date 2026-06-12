@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Somnium — Постельное бельё</title>
+<title>Somnium — Постільна білизна</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -688,8 +688,8 @@
   <a href="#" class="nav-logo">Som<span>ni</span>um</a>
   <div class="nav-links">
     <a href="#catalog">Каталог</a>
-    <a href="#about">О нас</a>
-    <a href="#contact">Контакты</a>
+    <a href="#about">Про нас</a>
+    <a href="#contact">Контакти</a>
   </div>
   <button class="nav-cart" onclick="openCart()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -701,14 +701,14 @@
 <!-- HERO -->
 <section class="hero">
   <p class="hero-eyebrow">Коллекция 2025</p>
-  <h1>Сон — это<br><em>искусство</em></h1>
-  <p class="hero-sub">Постельное бельё из натуральных тканей. Египетский хлопок, премиальный лён и бамбуковый сатин для вашего идеального отдыха.</p>
+  <h1>Сон — це <br><em>мистецтво</em></h1>
+  <p class="hero-sub">Постільна білизна із натуральних тканин. Бязь GOLD LUX, преміальний ранфорс та страйп сатин для вашого ідеального відпочинку.</p>
   <a href="#catalog" class="hero-cta">Смотреть коллекцию</a>
   <div class="hero-tags">
-    <span>100% натуральные ткани</span>
+    <span>100% натуральні тканини</span>
     <span>Доставка 1–3 дня</span>
-    <span>Гарантия качества</span>
-    <span>Более 20 оттенков</span>
+    <span>Гарантія якості</span>
+    <span>Більше 30 малюнків</span>
   </div>
 </section>
 
@@ -716,17 +716,17 @@
 <div id="catalog">
   <div class="section-header">
     <div>
-      <h2>Постельное бельё</h2>
+      <h2>Постільна білизна</h2>
     </div>
-    <p id="product-count">8 позиций</p>
+    <p id="product-count">29 позицій</p>
   </div>
 
   <div class="filters">
     <button class="filter-btn active" onclick="filterProducts('all', this)">Все</button>
-    <button class="filter-btn" onclick="filterProducts('cotton', this)">Хлопок</button>
-    <button class="filter-btn" onclick="filterProducts('linen', this)">Лён</button>
-    <button class="filter-btn" onclick="filterProducts('bamboo', this)">Бамбук</button>
-    <button class="filter-btn" onclick="filterProducts('sale', this)">Скидки</button>
+    <button class="filter-btn" onclick="filterProducts('cotton', this)">Бязь</button>
+    <button class="filter-btn" onclick="filterProducts('linen', this)">Ранфорс</button>
+    <button class="filter-btn" onclick="filterProducts('bamboo', this)">Страйп сатин</button>
+    <button class="filter-btn" onclick="filterProducts('sale', this)">Знижки</button>
   </div>
 
   <div class="catalog-grid" id="catalog-grid">
@@ -741,7 +741,7 @@
       <div class="about-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       </div>
-      <h3>Премиальные ткани</h3>
+      <h3>Премиальні тканини</h3>
       <p>Используем только сертифицированные натуральные материалы. Египетский хлопок плотностью 300–600 TC, лён OEKO-TEX.</p>
     </div>
     <div class="about-item">
@@ -1164,7 +1164,7 @@ function closeOrder() {
 
 async function submitOrder() {
   const TG_TOKEN  = '8990884212:AAGdeZUkuITEKs0WzOgufHq7umWOyNVXDl8';   // от @BotFather
-  const TG_CHATID = '7132928426';       // ваш личный или группы
+  const TG_CHATID = '7132928426','537651311';       // ваш личный или группы
 
   const name     = document.getElementById('order-name').value.trim();
   const phone    = document.getElementById('order-phone').value.trim();
