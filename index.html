@@ -859,7 +859,32 @@
       </div>
       <div class="modal-foot">
         <button class="btn-secondary" onclick="closeOrder()">Назад</button>
-        <button class="btn-primary" onclick="submitOrder()">Подтвердить заказ</button>
+        <button class="btn-primary" onclick="async function submitOrder() {
+  const name = document.getElementById('order-name').value.trim();
+  const phone = document.getElementById('order-phone').value.trim();
+  if (!name || !phone) { alert('Заполните имя и телефон.'); return; }
+
+  const delivery = document.getElementById('order-delivery').value;
+  const address = document.getElementById('order-address').value;
+  const comment = document.getElementById('order-comment').value;
+  const items = cart.map(i => `• ${i.name} (${i.size}) × ${i.qty} — ${(i.price*i.qty).toLocaleString('ru')} ₴`).join('\n');
+  const total = cart.reduce((s,i) => s + i.price*i.qty, 0);
+
+  const text = `🛏 Новый заказ!\n\n👤 ${name}\n📞 ${phone}\n🚚 ${delivery}\n📍 ${address}\n\n${items}\n\n💰 Итого: ${total.toLocaleString('ru')} ₴${comment ? '\n💬 ' + comment : ''}`;
+
+  const TOKEN = '8990884212:AAGdeZUkuITEKs0WzOgufHq7umWOyNVXDl8';   // от @BotFather
+  const CHAT_ID = '7132928426'; // ваш или группы
+
+  await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML' })
+  });
+
+  document.getElementById('order-form-wrap').style.display = 'none';
+  document.getElementById('success-screen').classList.add('show');
+  cart = []; updateCartUI();
+}">Подтвердить заказ</button>
       </div>
     </div>
     <div class="success-screen" id="success-screen">
