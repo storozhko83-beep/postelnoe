@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Somnium — Постільна білизна</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Som<span>ni</span>um</a>
+  <div class="nav-links">
+    <a href="#catalog">Каталог</a>
+    <a href="#about">Про нас</a>
+    <a href="#contact">Контакти</a>
+  </div>
+  <button class="nav-cart" onclick="openCart()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    Кошик
+    <div class="cart-badge" id="cart-count" style="display:none">0</div>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Колекція 2025</p>
+  <h1>Сон — це<br><em>мистецтво</em></h1>
+  <p class="hero-sub">Постільна білизна з натуральних тканин. Єгипетська бавовна, преміальний льон і бамбуковий сатин для вашого ідеального відпочинку.</p>
+  <a href="#catalog" class="hero-cta">Дивитися колекцію</a>
+  <div class="hero-tags">
+    <span>100% натуральні тканини</span>
+    <span>Доставка 1–3 дні</span>
+    <span>Гарантія якості</span>
+    <span>Понад 20 відтінків</span>
+  </div>
+</section>
+
+<!-- CATALOG -->
+<div id="catalog">
+  <div class="section-header">
+    <div>
+      <h2>Постільна білизна</h2>
+    </div>
+    <p id="product-count">8 позицій</p>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterProducts('all', this)">Усі</button>
+    <button class="filter-btn" onclick="filterProducts('cotton', this)">Бавовна</button>
+    <button class="filter-btn" onclick="filterProducts('linen', this)">Льон</button>
+    <button class="filter-btn" onclick="filterProducts('bamboo', this)">Бамбук</button>
+    <button class="filter-btn" onclick="filterProducts('sale', this)">Знижки</button>
+  </div>
+
+  <div class="catalog-grid" id="catalog-grid">
+    <!-- Products will be rendered by JS -->
+  </div>
+</div>
+
+<!-- ABOUT STRIP -->
+<section class="about-strip" id="about">
+  <div class="about-inner">
+    <div class="about-item">
+      <div class="about-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <h3>Преміальні тканини</h3>
+      <p>Використовуємо лише сертифіковані натуральні матеріали. Єгипетська бавовна щільністю 300–600 TC, льон OEKO-TEX.</p>
+    </div>
+    <div class="about-item">
+      <div class="about-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Безпечно для шкіри</h3>
+      <p>Усі вироби гіпоалергенні, сертифіковані за стандартом OEKO-TEX Standard 100. Підходять для чутливої шкіри.</p>
+    </div>
+    <div class="about-item">
+      <div class="about-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <h3>Доставка по Україні</h3>
+      <p>Відправляємо Новою Поштою та Укрпоштою. Доставка 1–3 робочі дні. Безкоштовно від 2000 грн.</p>
+    </div>
+    <div class="about-item">
+      <div class="about-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <h3>Підтримка 7 днів</h3>
+      <p>Відповімо на будь-які запитання про склад, догляд і підбір розміру. Повернення протягом 30 днів.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div>
+    <div class="logo">Somnium</div>
+    <p style="margin-top:12px">Постільна білизна з натуральних тканин. Створюємо затишок у кожній оселі.</p>
+  </div>
+  <div class="contact">
+    <p style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;color:rgba(255,255,255,0.3)">Контакти</p>
+    <a href="tel:+380501234567">+38 050 123-45-67</a>
+    <a href="mailto:hello@somnium.ua">hello@somnium.ua</a>
+    <a href="#">Instagram</a>
+  </div>
+  <div>
+    <p style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;color:rgba(255,255,255,0.3)">Графік роботи</p>
+    <p style="font-size:13px">Пн–Пт: 9:00–18:00<br>Сб: 10:00–15:00</p>
+  </div>
+</footer>
+
+<!-- MOBILE BOTTOM CART BAR -->
+<div class="mobile-bottom-bar" id="mobile-bottom-bar">
+  <button class="mobile-cart-btn" onclick="openCart()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span id="mobile-cart-label">Кошик</span>
+    <span class="mobile-cart-total" id="mobile-cart-total" style="display:none"></span>
+  </button>
+</div>
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-header">
+    <h2>Кошик</h2>
+    <button class="cart-close" onclick="closeCart()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-total">
+      <span>Разом</span>
+      <span class="total-amount" id="cart-total-amount">0 ₴</span>
+    </div>
+    <button class="checkout-btn" onclick="openOrder()">Оформити замовлення →</button>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div id="order-form-wrap">
+      <div class="modal-head">
+        <h2>Оформлення замовлення</h2>
+        <button class="modal-close" onclick="closeOrder()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Ім’я та прізвище</label>
+          <input type="text" id="order-name" placeholder="Іванова Марія">
+        </div>
+        <div class="form-group">
+          <label>Телефон</label>
+          <input type="tel" id="order-phone" placeholder="+38 050 000 0000">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="order-email" placeholder="maria@example.com">
+        </div>
+        <div class="form-group">
+          <label>Спосіб доставки</label>
+          <select id="order-delivery">
+            <option>Нова Пошта (до відділення)</option>
+            <option>Нова Пошта (кур’єр)</option>
+            <option>Укрпошта</option>
+            <option>Самовивіз (Одеса)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Місто та відділення / адреса</label>
+          <input type="text" id="order-address" placeholder="Одеса, від. №12">
+        </div>
+        <div class="form-group">
+          <label>Коментар</label>
+          <textarea id="order-comment" placeholder="Побажання до замовлення..."></textarea>
+        </div>
+        <div class="order-summary">
+          <div class="order-summary-title">Склад замовлення</div>
+          <div id="order-summary-items"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="closeOrder()">Назад</button>
+        <button class="btn-primary" onclick="submitOrder()">Підтвердити замовлення</button>
+      </div>
+    </div>
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✓</div>
+      <h3>Замовлення прийнято!</h3>
+      <p>Ми зв’яжемося з вами протягом 1–2 годин для підтвердження.</p>
+      <button class="btn-primary" style="margin-top:16px;width:200px" onclick="closeOrder();closeCart()">Добре</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal product-modal">
+    <button class="modal-close product-modal-close" onclick="closeProduct()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="product-modal-grid" id="product-modal-content"></div>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  {
+    id: 1, collection: 'Egyptian Cotton', category: 'cotton',
+    name: 'Blanc Classique',
+    desc: 'Класичний білий — 400TC єгипетська бавовна з мерсеризацією. М’який, свіжий, бездоганний.',
+    materials: ['Бавовна 100%', '400 TC', 'Мерсеризація'],
+    badge: 'hit', badgeText: 'Хіт',
+    price: 1890, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний', 'Сімейний'],
+    color: '#F0EDE8',
+    svgColor: '#C4B8A8'
+  },
+  {
+    id: 2, collection: 'Linen Stories', category: 'linen',
+    name: 'Terre & Mer',
+    desc: 'Вимитий льон з ефектом stonewash. Стає м’якішим з кожним пранням. Еко-барвник.',
+    materials: ['Льон 100%', 'OEKO-TEX', 'Stonewash'],
+    badge: 'new', badgeText: 'Новинка',
+    price: 2290, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний'],
+    color: '#E8E2D8',
+    svgColor: '#B4A898'
+  },
+  {
+    id: 3, collection: 'Bamboo Silk', category: 'bamboo',
+    name: 'Velvet Night',
+    desc: 'Бамбуковий сатин — шовковистий, терморегулювальний, антибактеріальний. Ідеальний для літа.',
+    materials: ['Бамбук 100%', 'Сатин', 'Антибактеріальний'],
+    badge: null,
+    price: 2650, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний', 'Сімейний'],
+    color: '#E2E8E8',
+    svgColor: '#9AB0B0'
+  },
+  {
+    id: 4, collection: 'Egyptian Cotton', category: 'cotton',
+    name: 'Sage Garden',
+    desc: 'Сіро-зелений — бавовна перкаль 300TC. Легкий, прохолодний, ідеальний для теплих ночей.',
+    materials: ['Бавовна 100%', '300 TC', 'Перкаль'],
+    badge: 'sale', badgeText: '-20%',
+    price: 1490, oldPrice: 1860,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний'],
+    color: '#DDE8DD',
+    svgColor: '#8FA88F'
+  },
+  {
+    id: 5, collection: 'Linen Stories', category: 'linen',
+    name: 'Dune Whisper',
+    desc: 'Пісочний льон з вишивкою по краю. Натуральний відтінок, мінімалістична деталь.',
+    materials: ['Льон 100%', 'Вишивка', 'OEKO-TEX'],
+    badge: 'new', badgeText: 'Новинка',
+    price: 2490, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний', 'Сімейний'],
+    color: '#EDE8DC',
+    svgColor: '#C0B49A'
+  },
+  {
+    id: 6, collection: 'Bamboo Silk', category: 'bamboo',
+    name: 'Midnight Indigo',
+    desc: 'Глибокий синьо-сірий бамбуковий сатин. Терморегуляція та шовковиста текстура.',
+    materials: ['Бамбук 100%', 'Сатин', '600 TC'],
+    badge: null,
+    price: 2950, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний'],
+    color: '#D8DDE8',
+    svgColor: '#8A96B0'
+  },
+  {
+    id: 7, collection: 'Egyptian Cotton', category: 'cotton',
+    name: 'Blush Petal',
+    desc: 'Пудрова бавовна сатин 600TC. Найм’якіша з бавовняних, блискуча поверхня.',
+    materials: ['Бавовна 100%', '600 TC', 'Сатин'],
+    badge: 'hit', badgeText: 'Хіт',
+    price: 2150, oldPrice: null,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний', 'Сімейний'],
+    color: '#EDE0DE',
+    svgColor: '#C4A8A4'
+  },
+  {
+    id: 8, collection: 'Linen Stories', category: 'linen',
+    name: 'Storm & Stone',
+    desc: 'Сірий льон з текстурним плетінням. Стійкий до плям, простий догляд, довговічний.',
+    materials: ['Льон 100%', 'Stonewash', 'OEKO-TEX'],
+    badge: 'sale', badgeText: '-15%',
+    price: 1990, oldPrice: 2340,
+    sizes: ['Євро', 'Двоспальний', 'Полуторний'],
+    color: '#E2E2E0',
+    svgColor: '#A8A8A4'
+  }
+];
+
+const PRICES = {
+  'Євро': 0, 'Двоспальний': -200, 'Полуторний': -400, 'Сімейний': 300
+};
+
+let cart = [];
+let selectedSizes = {};
+
+function getProductPrice(product, size) {
+  return product.price + (PRICES[size] || 0);
+}
+
+function renderIcon(color, svgColor) {
+  return `<svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="20" width="100" height="64" rx="6" fill="${color}" stroke="${svgColor}" stroke-width="1"/>
+    <rect x="10" y="20" width="100" height="28" rx="6" fill="${svgColor}" opacity="0.25"/>
+    <rect x="22" y="36" width="32" height="22" rx="3" fill="${svgColor}" opacity="0.35"/>
+    <rect x="66" y="36" width="32" height="22" rx="3" fill="${svgColor}" opacity="0.35"/>
+    <path d="M10 48h100" stroke="${svgColor}" stroke-width="0.8" opacity="0.4"/>
+  </svg>`;
+}
+
+function renderCard(p) {
+  const selectedSize = selectedSizes[p.id] || p.sizes[0];
+  const price = getProductPrice(p, selectedSize);
+  return `
+  <div class="product-card" id="card-${p.id}" data-category="${p.category}" data-sale="${p.badge === 'sale' ? 'true' : 'false'}">
+    <div class="card-image" onclick="openProduct(${p.id})" style="cursor:pointer">
+      ${renderIcon(p.color, p.svgColor)}
+      ${p.badge ? `<div class="card-badge badge-${p.badge}">${p.badgeText}</div>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-collection">${p.collection}</div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="card-material">${p.materials.map(m => `<span class="material-tag">${m}</span>`).join('')}</div>
+      <div class="card-inline-footer">
+        <div class="price-wrap">
+          ${p.oldPrice ? `<span class="price-old">${(p.oldPrice + (PRICES[selectedSize]||0)).toLocaleString('uk')} ₴</span>` : ''}
+          <span class="price" id="price-mob-${p.id}">${price.toLocaleString('uk')} ₴</span>
+        </div>
+        <button class="add-btn" onclick="openProduct(${p.id})">Детальніше</button>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="price-wrap">
+        ${p.oldPrice ? `<span class="price-old" id="price-old-${p.id}">${(p.oldPrice + (PRICES[selectedSize]||0)).toLocaleString('uk')} ₴</span>` : ''}
+        <span class="price" id="price-${p.id}">${price.toLocaleString('uk')} ₴</span>
+      </div>
+      <button class="add-btn" onclick="openProduct(${p.id})">Детальніше</button>
+    </div>
+  </div>`;
+}
+
+function renderCatalog() {
+  document.getElementById('catalog-grid').innerHTML = PRODUCTS.map(renderCard).join('');
+}
+
+function openProduct(productId) {
+  const p = PRODUCTS.find(x => x.id === productId);
+  const selectedSize = selectedSizes[p.id] || p.sizes[0];
+  document.getElementById('product-modal-content').innerHTML = `
+    <div class="product-modal-photo" style="background:linear-gradient(160deg, ${p.color} 0%, #FDFAF7 130%)">
+      ${renderIcon(p.color, p.svgColor)}
+      ${p.badge ? `<div class="card-badge badge-${p.badge}">${p.badgeText}</div>` : ''}
+    </div>
+    <div class="product-modal-info">
+      <div class="card-collection">${p.collection}</div>
+      <h2 class="product-modal-name">${p.name}</h2>
+      <p class="product-modal-desc">${p.desc}</p>
+      <div class="card-material">${p.materials.map(m => `<span class="material-tag">${m}</span>`).join('')}</div>
+      <div class="size-section">
+        <span class="size-label">Розмір</span>
+        <div class="size-options" id="modal-size-options">
+          ${p.sizes.map(s => `<button class="size-btn ${s === selectedSize ? 'selected' : ''}" onclick="selectModalSize(${p.id}, '${s}', this)">${s}</button>`).join('')}
+        </div>
+      </div>
+      <div class="product-modal-footer">
+        <div class="price-wrap">
+          ${p.oldPrice ? `<span class="price-old" id="modal-price-old">${(p.oldPrice + (PRICES[selectedSize]||0)).toLocaleString('uk')} ₴</span>` : ''}
+          <span class="price" id="modal-price">${getProductPrice(p, selectedSize).toLocaleString('uk')} ₴</span>
+        </div>
+        <button class="add-btn" id="modal-add-btn" onclick="addToCartFromModal(${p.id})">У кошик</button>
+      </div>
+    </div>`;
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function closeProduct() {
+  document.getElementById('product-modal').classList.remove('open');
+}
+
+function selectModalSize(productId, size, btn) {
+  selectedSizes[productId] = size;
+  document.querySelectorAll('#modal-size-options .size-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const p = PRODUCTS.find(x => x.id === productId);
+  document.getElementById('modal-price').textContent = getProductPrice(p, size).toLocaleString('uk') + ' ₴';
+  const modalOld = document.getElementById('modal-price-old');
+  if (modalOld && p.oldPrice) modalOld.textContent = (p.oldPrice + (PRICES[size]||0)).toLocaleString('uk') + ' ₴';
+  updateCardPrice(productId, size);
+}
+
+function updateCardPrice(productId, size) {
+  const p = PRODUCTS.find(x => x.id === productId);
+  const priceStr = getProductPrice(p, size).toLocaleString('uk') + ' ₴';
+  const el = document.getElementById(`price-${productId}`);
+  const elMob = document.getElementById(`price-mob-${productId}`);
+  if (el) el.textContent = priceStr;
+  if (elMob) elMob.textContent = priceStr;
+  const oldEl = document.getElementById(`price-old-${productId}`);
+  if (oldEl && p.oldPrice) oldEl.textContent = (p.oldPrice + (PRICES[size]||0)).toLocaleString('uk') + ' ₴';
+}
+
+function addToCartFromModal(productId) {
+  addToCart(productId);
+  const btn = document.getElementById('modal-add-btn');
+  if (btn) { btn.textContent = '✓ Додано'; btn.classList.add('added'); }
+  setTimeout(() => closeProduct(), 500);
+}
+
+function filterProducts(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  let count = 0;
+  document.querySelectorAll('.product-card').forEach(card => {
+    const show = cat === 'all' || card.dataset.category === cat || (cat === 'sale' && card.dataset.sale === 'true');
+    card.classList.toggle('hidden', !show);
+    if (show) count++;
+  });
+  document.getElementById('product-count').textContent = count + ' позицій';
+}
+
+function addToCart(productId) {
+  const p = PRODUCTS.find(x => x.id === productId);
+  const size = selectedSizes[productId] || p.sizes[0];
+  const price = getProductPrice(p, size);
+  const key = `${productId}-${size}`;
+  const existing = cart.find(i => i.key === key);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ key, productId, name: p.name, collection: p.collection, size, price, qty: 1, color: p.color, svgColor: p.svgColor });
+  }
+  ['btn-' + productId, 'btn-mob-' + productId].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.textContent = '✓ Додано'; btn.classList.add('added'); }
+  });
+  setTimeout(() => {
+    ['btn-' + productId, 'btn-mob-' + productId].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) { btn.textContent = 'У кошик'; btn.classList.remove('added'); }
+    });
+  }, 1500);
+  updateCartUI();
+  openCart();
+}
+
+function updateCartUI() {
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById('cart-count');
+  if (count > 0) { badge.style.display = 'flex'; badge.textContent = count; }
+  else badge.style.display = 'none';
+  const mobileTotal = document.getElementById('mobile-cart-total');
+  const mobileLabel = document.getElementById('mobile-cart-label');
+  if (count > 0) {
+    mobileLabel.textContent = `Кошик (${count})`;
+    mobileTotal.style.display = 'inline';
+    mobileTotal.textContent = '— ' + total.toLocaleString('uk') + ' ₴';
+  } else {
+    mobileLabel.textContent = 'Кошик';
+    mobileTotal.style.display = 'none';
+  }
+  const list = document.getElementById('cart-items-list');
+  const footer = document.getElementById('cart-footer');
+  if (cart.length === 0) {
+    list.innerHTML = `<div class="cart-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <p>Кошик порожній.<br>Додайте що-небудь.</p>
+    </div>`;
+    footer.style.display = 'none';
+  } else {
+    list.innerHTML = cart.map(i => `
+      <div class="cart-item">
+        <div class="cart-item-img">${renderIcon(i.color, i.svgColor)}</div>
+        <div class="cart-item-info">
+          <div class="name">${i.name}</div>
+          <div class="meta">${i.collection} · ${i.size}</div>
+          <div class="cart-qty">
+            <button class="qty-btn" onclick="changeQty('${i.key}', -1)">−</button>
+            <span class="qty-num">${i.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${i.key}', 1)">+</button>
+          </div>
+          <div class="item-price">${(i.price * i.qty).toLocaleString('uk')} ₴</div>
+        </div>
+        <button class="cart-item-remove" onclick="removeFromCart('${i.key}')" title="Видалити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`).join('');
+    footer.style.display = 'block';
+    document.getElementById('cart-total-amount').textContent = total.toLocaleString('uk') + ' ₴';
+  }
+}
+
+function changeQty(key, delta) {
+  const item = cart.find(i => i.key === key);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  updateCartUI();
+}
+
+function removeFromCart(key) {
+  cart = cart.filter(i => i.key !== key);
+  updateCartUI();
+}
+
+function openCart() {
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-drawer').classList.remove('open');
+}
+
+function openOrder() {
+  closeCart();
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const itemsHtml = cart.map(i => `
+    <div class="order-line"><span>${i.name} (${i.size}) × ${i.qty}</span><span>${(i.price * i.qty).toLocaleString('uk')} ₴</span></div>
+  `).join('');
+  document.getElementById('order-summary-items').innerHTML = itemsHtml + `<div class="order-line total"><span>Разом</span><span>${total.toLocaleString('uk')} ₴</span></div>`;
+  document.getElementById('order-form-wrap').style.display = 'block';
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('order-modal').classList.add('open');
+}
+
+function closeOrder() {
+  document.getElementById('order-modal').classList.remove('open');
+}
+
+async function submitOrder() {
+  const TG_TOKEN  = '8990884212:AAGdeZUkuITEKs0WzOgufHq7umWOyNVXDl8';   // від @BotFather
+  const TG_CHATID = '7132928426';       // ваш особистий або групи
+
+  const name     = document.getElementById('order-name').value.trim();
+  const phone    = document.getElementById('order-phone').value.trim();
+  const email    = document.getElementById('order-email').value.trim();
+  const delivery = document.getElementById('order-delivery').value;
+  const address  = document.getElementById('order-address').value.trim();
+  const comment  = document.getElementById('order-comment').value.trim();
+
+  if (!name || !phone) { alert('Будь ласка, заповніть ім’я та телефон.'); return; }
+
+  const submitBtn = document.querySelector('.btn-primary');
+  submitBtn.textContent = 'Надсилаємо...';
+  submitBtn.disabled = true;
+
+  const itemLines = cart.map(i =>
+    `  • <b>${i.name}</b> (${i.size}) × ${i.qty} — ${(i.price * i.qty).toLocaleString('uk')} ₴`
+  ).join('\n');
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const now = new Date().toLocaleString('uk', { timeZone: 'Europe/Kiev' });
+
+  const text = [
+    `🛏 <b>Нове замовлення!</b>`,
+    `🕐 ${now}`,
+    ``,
+    `👤 <b>Ім’я:</b> ${name}`,
+    `📞 <b>Телефон:</b> ${phone}`,
+    email    ? `📧 <b>Email:</b> ${email}` : null,
+    `🚚 <b>Доставка:</b> ${delivery}`,
+    address  ? `📍 <b>Адреса:</b> ${address}` : null,
+    ``,
+    `🧾 <b>Склад замовлення:</b>`,
+    itemLines,
+    ``,
+    `💰 <b>Разом: ${total.toLocaleString('uk')} ₴</b>`,
+    comment  ? `\n💬 <b>Коментар:</b> ${comment}` : null,
+  ].filter(l => l !== null).join('\n');
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHATID, text, parse_mode: 'HTML' })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.description);
+
+    document.getElementById('order-form-wrap').style.display = 'none';
+    document.getElementById('success-screen').classList.add('show');
+    cart = [];
+    updateCartUI();
+  } catch (err) {
+    alert('Не вдалося надіслати замовлення. Перевірте токен і chat_id або зв’яжіться з нами за телефоном.');
+    console.error('Telegram error:', err);
+  } finally {
+    submitBtn.textContent = 'Підтвердити замовлення';
+    submitBtn.disabled = false;
+  }
+}
+
+renderCatalog();
+updateCartUI();
+
+document.getElementById('product-modal').addEventListener('click', e => {
+  if (e.target.id === 'product-modal') closeProduct();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeProduct();
+});
+</script>
+</body>
+</html>
