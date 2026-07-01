@@ -494,6 +494,7 @@ body.scroll-locked {
 .badge-new { background: var(--sage-dark); color: #fff; }
 .badge-sale { background: var(--terra); color: #fff; }
 .badge-hit { background: var(--charcoal); color: #fff; }
+.badge-ending { background: #C77D2E; color: #fff; }
 
 .card-body {
   padding: 22px 26px;
@@ -5400,6 +5401,7 @@ function adminEdit(id) {
         <option value="hit" ${badge === 'hit' ? 'selected' : ''}>Хіт</option>
         <option value="new" ${badge === 'new' ? 'selected' : ''}>Новинка</option>
         <option value="sale" ${badge === 'sale' ? 'selected' : ''}>Знижка</option>
+        <option value="ending" ${badge === 'ending' ? 'selected' : ''}>Закінчується</option>
       </select>
       <label>Доступні розміри</label>
       <div class="sizes-grid">
@@ -5687,7 +5689,7 @@ function adminSave() {
   const sku = document.getElementById('af-sku').value.trim();
   const desc = document.getElementById('af-desc').value.trim();
   const badge = document.getElementById('af-badge').value;
-  const badgeTextMap = { hit: 'Хіт', new: 'Новинка', sale: 'Знижка' };
+  const badgeTextMap = { hit: 'Хіт', new: 'Новинка', sale: 'Знижка', ending: 'Закінчується' };
   const sizes = Array.from(document.querySelectorAll('.af-size:checked')).map(c => c.value);
   if (!sizes.length) { alert('Оберіть хоча б один розмір'); return; }
 
@@ -5855,4 +5857,4 @@ setTimeout(function(){
   } catch(e){}
 }, 5000);
 </script>
-</body></html>test
+</body></html>
