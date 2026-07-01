@@ -4599,7 +4599,7 @@ async function submitOrder() {
     document.getElementById('order-form-wrap').style.display = 'none';
     document.getElementById('success-screen').classList.add('show');
     if (typeof fbq === 'function') {
-      fbq('track', 'Purchase', { value: total || 0, currency: 'UAH', num_items: cart.reduce((n,i)=>n+i.qty,0), content_ids: cart.map(i=>String(i.productId)), content_type: 'product' });
+      fbq('track', 'Purchase', { value: Number(((total || 0) > 0 ? total : 890).toFixed(2)), currency: 'UAH', num_items: cart.reduce((n,i)=>n+i.qty,0), content_ids: cart.map(i=>String(i.productId)), content_type: 'product' });
     }
     if (typeof gtag === 'function') {
       gtag('event', 'purchase', { transaction_id: orderNo, currency: 'UAH', value: total || 0, items: cart.map(i => ({ item_id: String(i.productId), item_name: i.name, price: i.price || 0, quantity: i.qty })) });
