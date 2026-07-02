@@ -1475,7 +1475,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
     <span class="topbar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Власне виробництво в Україні</span>
     <span class="topbar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 11 2 2 4-4"/></svg>Преміальна якість</span>
     <span class="topbar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h14v11H1z"/><path d="M15 8h4l3 3v4h-7z"/><circle cx="5.5" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Відправка сьогодні</span>
-    <span class="topbar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Оплата при отриманні</span>
+    <span class="topbar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Мінімальна предоплата</span>
   </div>
 </div>
 
@@ -1507,7 +1507,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
         <span class="hero2-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>100% натуральна бавовна</span>
         <span class="hero2-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Не линяє та не скочується</span>
         <span class="hero2-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Відправка за 24 год</span>
-        <span class="hero2-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Оплата при отриманні</span>
+        <span class="hero2-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Мінімальна предоплата</span>
       </div>
       <a href="#catalog" class="hero2-cta">Обрати комплект</a>
       <div class="hero2-rating"><span>Понад 3500 задоволених клієнтів</span><span class="stars">★★★★★</span><b>4.9/5</b></div>
@@ -2549,6 +2549,21 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
       <h3>Замовлення прийнято!</h3>
       <p>Ми зв’яжемося з вами протягом 1–2 годин для підтвердження.</p>
       <button class="btn-primary" style="margin-top:16px;width:200px" onclick="closeOrder();closeCart()">Добре</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREPAYMENT CONFIRM MODAL -->
+<div class="modal-overlay" id="prepayment-modal" style="z-index:400;">
+  <div class="modal" style="max-width:380px;">
+    <div style="padding:32px 28px; text-align:center;">
+      <p style="font-size:15px; line-height:1.55; margin:0 0 24px; color:var(--charcoal);">
+        При індивідуальному замовленні або замовленні простирадла на резинці діє <strong>100% передоплата</strong>.<br>Погоджуєтесь на цю умову?
+      </p>
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <button class="btn-secondary" onclick="prepaymentAnswer(false)">Ні</button>
+        <button class="btn-primary" onclick="prepaymentAnswer(true)">Так</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4021,8 +4036,8 @@ function openProduct(productId) {
         </div>
       </div>
       <div class="size-section">
-        <div class="size-options">
-          <button class="size-btn ${selectedFittedSheet[p.id] ? 'selected' : ''}" onclick="toggleModalFittedSheet(${p.id}, this)">Простинь на резинці</button>
+        <div class="size-options" id="modal-fitted-sheet-option">
+          <button class="size-btn ${selectedFittedSheet[p.id] ? 'selected' : ''}" onclick="toggleModalFittedSheet(${p.id}, this)">Простирадло на резинці</button>
         </div>
       </div>
       <div class="size-chart" id="modal-size-chart">${renderSizeChart(selectedSize, selectedPillow)}</div>
@@ -4063,6 +4078,7 @@ function selectModalSize(productId, size, btn) {
   }
   updateCardPrice(productId, size);
   updateModalSizeChart(productId);
+  checkPrepaymentPopup(productId);
 }
 
 function updateCardPrice(productId, size) {
@@ -4090,6 +4106,52 @@ function selectModalPillow(productId, option, btn) {
 function toggleModalFittedSheet(productId, btn) {
   selectedFittedSheet[productId] = !selectedFittedSheet[productId];
   btn.classList.toggle('selected', selectedFittedSheet[productId]);
+  checkPrepaymentPopup(productId);
+}
+
+let pendingPrepaymentProductId = null;
+const prepaymentAgreed = {};
+
+function checkPrepaymentPopup(productId) {
+  const isIndividual = selectedSizes[productId] === 'Індивідуальний';
+  const hasFittedSheet = !!selectedFittedSheet[productId];
+  if ((isIndividual || hasFittedSheet) && !prepaymentAgreed[productId]) {
+    pendingPrepaymentProductId = productId;
+    document.getElementById('prepayment-modal').classList.add('open');
+  }
+}
+
+function prepaymentAnswer(agree) {
+  const productId = pendingPrepaymentProductId;
+  document.getElementById('prepayment-modal').classList.remove('open');
+  if (!productId) return;
+  if (agree) {
+    prepaymentAgreed[productId] = true;
+  } else {
+    // Revert fitted sheet selection
+    selectedFittedSheet[productId] = false;
+    const fittedBtn = document.querySelector('#modal-fitted-sheet-option .size-btn');
+    if (fittedBtn) fittedBtn.classList.remove('selected');
+    // Revert individual size selection back to first non-individual size
+    if (selectedSizes[productId] === 'Індивідуальний') {
+      const p = PRODUCTS.find(x => x.id === productId);
+      const fallbackSize = p.sizes.find(s => s !== 'Індивідуальний') || p.sizes[0];
+      selectedSizes[productId] = fallbackSize;
+      document.querySelectorAll('#modal-size-options .size-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent === fallbackSize);
+      });
+      document.getElementById('modal-price').textContent = fmtPrice(getProductPrice(p, fallbackSize));
+      const modalOld = document.getElementById('modal-price-old');
+      if (modalOld) {
+        const op = getOldPrice(p, fallbackSize);
+        modalOld.style.display = op ? '' : 'none';
+        if (op) modalOld.textContent = op.toLocaleString('uk') + ' ₴';
+      }
+      updateCardPrice(productId, fallbackSize);
+      updateModalSizeChart(productId);
+    }
+  }
+  pendingPrepaymentProductId = null;
 }
 
 function addToCartFromModal(productId) {
