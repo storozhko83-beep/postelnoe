@@ -2515,7 +2515,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
   <div class="contact">
     <p style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;color:rgba(255,255,255,0.3)">Контакти</p>
     <a href="tel:+380681042737">+38 068 104-27-37</a>
-    <a href="/cdn-cgi/l/email-protection#374458585a595e5e425a5a77505a565e5b1954585a"><span class="__cf_email__" data-cfemail="f5869a9a989b9c9c809898b59298949c99db969a98">[email&#160;protected]</span></a>
+    <a href="mailto:soomniiumm@gmail.com">soomniiumm@gmail.com</a>
   </div>
   <div>
     <p style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;color:rgba(255,255,255,0.3)">Графік роботи</p>
@@ -2650,7 +2650,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const BASE_PRODUCTS = /*PRODUCTS_START*/[
   {
     "badge": "new",
@@ -4053,7 +4053,6 @@ window.addEventListener('popstate', function () {
   if (document.getElementById('product-modal').classList.contains('open')) closeProduct();
   if (document.getElementById('order-modal').classList.contains('open')) closeOrder();
   if (document.getElementById('cart-drawer').classList.contains('open')) closeCart();
-  if(location.pathname.startsWith('/product/')) history.replaceState(null,'','/');
   _inPop = false;
 });
 
@@ -4126,7 +4125,6 @@ function openProduct(productId) {
   document.getElementById('product-modal').classList.add('open');
   lockBodyScroll();
   syncOverlayHistory();
-  try { if(typeof _seoSlug==='function'){ history.replaceState(null,'','/product/'+_seoSlug(p.name)); } } catch(e){}
   requestAnimationFrame(() => { requestAnimationFrame(() => { contentEl.style.opacity = '1'; }); });
 }
 
@@ -4134,7 +4132,6 @@ function closeProduct() {
   var ce = document.getElementById('product-modal-content');
   if (ce) ce.style.opacity = '0';
   document.getElementById('product-modal').classList.remove('open');
-  if(location.pathname.startsWith('/product/')) history.replaceState(null,'','/');
   unlockBodyScroll();
   afterOverlayClose();
 }
