@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://somniumua.com/sitemap.xml
