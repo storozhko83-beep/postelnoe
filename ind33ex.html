@@ -4473,7 +4473,6 @@ function npFallbackToManual() {
 let npCityTimer = null;
 function npCityInput() {
   const q = document.getElementById('np-city').value.trim();
-  if (npCity && q === npCity.name) return; // вже підтверджений вибір — не скидаємо
   npCity = null; npBranch = null;
   const br = document.getElementById('np-branch');
   br.value = ''; br.disabled = true; br.placeholder = 'Спочатку оберіть місто';
@@ -4507,12 +4506,6 @@ function npCityInput() {
 let npBranchTimer = null;
 function npBranchInput() {
   if (!npCity) return;
-  const q0 = document.getElementById('np-branch').value.trim();
-  // Якщо поле просто отримало фокус повторно, а значення не змінилось —
-  // це вже підтверджений вибір, не скидаємо його (інакше клієнт може
-  // натиснути "Підтвердити замовлення" саме в ту мить, коли ми його
-  // щойно обнулили, і отримати хибну помилку валідації).
-  if (npBranch && q0 === npBranch) return;
   npBranch = null;
   clearTimeout(npBranchTimer);
   npBranchTimer = setTimeout(async () => {
