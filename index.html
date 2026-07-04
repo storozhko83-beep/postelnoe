@@ -3863,8 +3863,9 @@ function renderCard(p) {
 }
 
 function renderCatalog() {
-  document.getElementById('catalog-grid').innerHTML = PRODUCTS.map(renderCard).join('');
-  document.getElementById('product-count').textContent = pluralPositions(PRODUCTS.length);
+  const visible = PRODUCTS.filter(p => !p.archived);
+  document.getElementById('catalog-grid').innerHTML = visible.map(renderCard).join('');
+  document.getElementById('product-count').textContent = pluralPositions(visible.length);
   if (_activeCat && _activeCat !== 'all') filterProducts(_activeCat, null);
   try{ refreshLanding(); }catch(e){}
 }
@@ -3938,12 +3939,14 @@ function reconcileCatalog(newProducts) {
   const nodeById = {};
   grid.querySelectorAll('.product-card').forEach(n => { nodeById[n.id] = n; });
   PRODUCTS = newProducts;
-  // Якщо набір товарів інший (додали/видалили) — простіше перемалювати все.
-  const haveAll = newProducts.every(p => nodeById['card-' + p.id]) &&
-    Object.keys(nodeById).length === newProducts.length;
+  // Архівні товари не показуємо у вітрині — рахуємо/звіряємо лише видимі.
+  const visibleNew = newProducts.filter(p => !p.archived);
+  // Якщо набір товарів інший (додали/видалили/заархівували) — простіше перемалювати все.
+  const haveAll = visibleNew.every(p => nodeById['card-' + p.id]) &&
+    Object.keys(nodeById).length === visibleNew.length;
   if (!haveAll) { renderCatalog(); return; }
   const frag = document.createDocumentFragment();
-  newProducts.forEach(p => {
+  visibleNew.forEach(p => {
     let node = nodeById['card-' + p.id];
     const old = oldById[p.id];
     if (!old || _cardSig(old) !== _cardSig(p)) {
@@ -3961,7 +3964,7 @@ function reconcileCatalog(newProducts) {
     frag.appendChild(node); // переносить існуючий вузол → без перезавантаження фото
   });
   grid.replaceChildren(frag); // ставить усі вузли в новому порядку; прибирає старі (перебудовані) вузли
-  document.getElementById('product-count').textContent = pluralPositions(PRODUCTS.length);
+  document.getElementById('product-count').textContent = pluralPositions(visibleNew.length);
   if (_activeCat && _activeCat !== 'all') filterProducts(_activeCat, null);
 }
 
@@ -5185,11 +5188,11 @@ function closeAdmin() {
 function renderAdmin() {
   _adminEditId = null;
   const rows = PRODUCTS.map((p, i) => `
-    <div class="admin-row" draggable="true" data-idx="${i}" data-id="${p.id}">
+    <div class="admin-row" draggable="true" data-idx="${i}" data-id="${p.id}" style="${p.archived ? 'opacity:.5' : ''}">
       <span class="admin-drag" title="Перетягніть, щоб змінити порядок">⠿</span>
       <div class="admin-thumb">${p.image ? `<img src="${p.image}" alt="">` : '🛏️'}</div>
       <div class="info">
-        <div class="nm">${p.name || '—'}</div>
+        <div class="nm">${p.name || '—'}${p.archived ? ' <span style="font-weight:400;color:var(--mid)">· в архіві</span>' : ''}</div>
         <div class="meta">${CAT_LABELS[p.category] || p.category}${p.sku ? ' · ' + p.sku : ''}${p.badge ? ' · ' + (p.badgeText || p.badge) : ''}</div>
       </div>
       <div class="admin-ord">
@@ -5198,7 +5201,10 @@ function renderAdmin() {
       </div>
       <div class="acts">
         <button onclick="adminEdit(${p.id})">Редагувати</button>
-        <button onclick="adminDelete(${p.id})" style="color:var(--terra)">✕</button>
+        ${p.archived
+          ? `<button onclick="adminUnarchive(${p.id})" title="Повернути на сайт">♻️ Повернути</button>`
+          : `<button onclick="adminArchive(${p.id})" title="Сховати з сайту, не видаляючи налаштування">📦 В архів</button>`}
+        <button onclick="adminDelete(${p.id})" style="color:var(--terra)" title="Видалити назавжди">✕</button>
       </div>
     </div>`).join('');
   document.getElementById('admin-content').innerHTML = `
@@ -5212,6 +5218,7 @@ function renderAdmin() {
     <div class="admin-body">
       <div class="admin-hint">📌 Зміни зберігаються автоматично у хмарі і одразу видно <b>усім покупцям</b> на сайті. Кнопка «Зберегти у файл сайту» — резервна копія (не обов’язкова).</div>
       <div class="admin-hint">↕️ Щоб змінити <b>порядок карток</b> на сайті — перетягніть рядок за ⠿ або скористайтеся кнопками ▲▼. Порядок зберігається автоматично.</div>
+      <div class="admin-hint">📦 Кнопка «В архів» ховає товар з сайту, але <b>зберігає всі налаштування</b> (фото, ціни, розміри) — потім можна повернути кнопкою «♻️ Повернути» без повторного налаштування.</div>
       <div style="font-size:13px;color:var(--mid);margin-bottom:8px">Товарів: ${PRODUCTS.length}</div>
       ${rows || '<p style="color:var(--mid)">Поки що немає товарів</p>'}
     </div>`;
@@ -5945,6 +5952,24 @@ function adminDelete(id) {
   } else {
     renderCatalog();
   }
+  renderAdmin();
+}
+
+function adminArchive(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  p.archived = true;
+  persistProducts();
+  renderCatalog();
+  renderAdmin();
+}
+
+function adminUnarchive(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  delete p.archived;
+  persistProducts();
+  renderCatalog();
   renderAdmin();
 }
 
