@@ -34,30 +34,6 @@ gtag('config', 'G-781D3K73C0');
 </script>
 <!-- End Microsoft Clarity -->
 
-<!-- Джерело замовлення: фіксуємо UTM/fbclid/gclid/referrer при першому заході -->
-<script>
-(function(){
-  try {
-    var KEY = 'somnium_source';
-    if (localStorage.getItem(KEY)) return; // фіксуємо тільки перший дотик (first-touch)
-    var p = new URLSearchParams(location.search);
-    var data = {
-      utm_source:   p.get('utm_source')   || '',
-      utm_medium:   p.get('utm_medium')   || '',
-      utm_campaign: p.get('utm_campaign') || '',
-      utm_term:     p.get('utm_term')     || '',
-      utm_content:  p.get('utm_content')  || '',
-      fbclid: p.get('fbclid') || '',
-      gclid:  p.get('gclid')  || '',
-      referrer: document.referrer || '',
-      landing: location.pathname + location.search,
-      capturedAt: Date.now()
-    };
-    localStorage.setItem(KEY, JSON.stringify(data));
-  } catch(e) {}
-})();
-</script>
-
 <meta name="facebook-domain-verification" content="3kknkynoj4mgfdmk1agkjsd3py8hhm" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -540,6 +516,12 @@ body.scroll-locked {
   background: linear-gradient(160deg, var(--cream) 0%, #F2ECE2 100%);
   display: flex; align-items: center; justify-content: center;
   position: relative; overflow: hidden;
+}
+.card-image::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 38%, rgba(255,255,255,0.55) 0%, transparent 70%);
+  pointer-events: none;
 }
 .card-image img.product-photo,
 .product-modal-photo img.product-photo {
@@ -4690,24 +4672,6 @@ async function sendReceiptEmail(o) {
 }
 
 async function submitOrder() {
-  function getOrderSource() {
-    let d = {};
-    try { d = JSON.parse(localStorage.getItem('somnium_source') || '{}'); } catch(e) {}
-    let label;
-    if (d.utm_source) {
-      label = [d.utm_source, d.utm_medium, d.utm_campaign].filter(Boolean).join(' / ');
-    } else if (d.fbclid) {
-      label = 'Facebook/Instagram Ads (fbclid)';
-    } else if (d.gclid) {
-      label = 'Google Ads (gclid)';
-    } else if (d.referrer) {
-      try { label = 'Перехід з ' + new URL(d.referrer).hostname; } catch(e) { label = 'Перехід з посилання'; }
-    } else {
-      label = 'Прямий захід (без джерела)';
-    }
-    return { label, raw: d };
-  }
-
   const TG_TOKEN  = '8990884212:AAGdeZUkuITEKs0WzOgufHq7umWOyNVXDl8';   // від @BotFather
   const TG_CHATIDS = ['7132928426', '537651311'];   // особисті або групи — замовлення йде в усі чати
   const EMAILJS_SERVICE_ID  = 'service_frudcia';
@@ -4735,12 +4699,10 @@ async function submitOrder() {
   const now = new Date().toLocaleString('uk', { timeZone: 'Europe/Kiev' });
   const d = new Date();
   const orderNo = `SMN-${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Math.floor(100 + Math.random()*900))}`;
-  const src = getOrderSource();
 
   const text = [
     `🛏 <b>Нове замовлення № ${orderNo}</b>`,
     `🕐 ${now}`,
-    `🔎 <b>Джерело:</b> ${src.label}`,
     ``,
     `👤 <b>Ім’я:</b> ${name}`,
     `📞 <b>Телефон:</b> ${phone}`,
@@ -4790,7 +4752,6 @@ async function submitOrder() {
     }
     if (typeof clarity === 'function') { clarity('set', 'purchase', String(total || 0)); }
     pushLeadToCloud({ orderNo, name, phone, email, delivery, address, comment, total,
-      source: src.label, sourceRaw: src.raw,
       items: cart.map(i => ({ name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet, qty: i.qty, price: i.price })) });
     cart = [];
     updateCartUI();
@@ -5459,7 +5420,6 @@ function redrawLeadList(){
         <span style="font-size:11px;background:${m.bg};color:${m.color};padding:3px 9px;border-radius:20px;font-weight:600">${m.label}</span>
       </div>
       <div style="font-size:13px;color:var(--mid);margin-top:4px">\ud83d\udcde <a href="tel:${escAttr(l.phone||'')}" style="color:var(--dark)">${escHtml(l.phone||'')}</a> \u00b7 \ud83d\udd50 ${dt}</div>
-      ${l.source?`<div style="font-size:12px;color:#3D5C3D">\ud83d\udd0e ${escHtml(l.source)}</div>`:''}
       ${l.address?`<div style="font-size:13px;color:var(--mid)">\ud83d\udccd ${escHtml(l.address)}</div>`:''}
       ${l.email?`<div style="font-size:13px;color:var(--mid)">\ud83d\udce7 ${escHtml(l.email)}</div>`:''}
       <div style="font-size:13px;color:var(--dark);margin-top:6px">${items}</div>
@@ -5545,11 +5505,11 @@ async function leadDelete(id){
 }
 
 function exportLeadsCSV(){
-  const head = ['Дата','\u2116','Ім\u02bcя','Телефон','Email','Джерело','Доставка','Адреса','Товари','Сума','Статус','Коментар'];
+  const head = ['Дата','\u2116','Ім\u02bcя','Телефон','Email','Доставка','Адреса','Товари','Сума','Статус','Коментар'];
   const esc = s => '"' + String(s == null ? '' : s).replace(/"/g,'""') + '"';
   const rows = _leads.map(l => {
     const items = (l.items||[]).map(i => `${i.name} (${i.size||''}${i.pillow?', нав. '+i.pillow:''}${i.fittedSheet?', простинь на резинці':''}) x${i.qty}`).join('; ');
-    return [new Date(l.createdAt).toLocaleString('uk'), l.orderNo||'', l.name||'', l.phone||'', l.email||'', l.source||'', l.delivery||'', l.address||'', items, leadEffectiveTotal(l), leadStatusMeta(l.status||'new').label, l.comment||''].map(esc).join(',');
+    return [new Date(l.createdAt).toLocaleString('uk'), l.orderNo||'', l.name||'', l.phone||'', l.email||'', l.delivery||'', l.address||'', items, leadEffectiveTotal(l), leadStatusMeta(l.status||'new').label, l.comment||''].map(esc).join(',');
   });
   const csv = '\ufeff' + [head.map(esc).join(',')].concat(rows).join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
