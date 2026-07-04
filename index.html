@@ -464,6 +464,33 @@ nav::before {
   font-style: italic;
 }
 
+.modal-related { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
+.modal-related-title {
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--mid); margin-bottom: 12px; font-weight: 600;
+}
+.modal-related-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.related-card {
+  cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; background: #fff; transition: transform .2s ease, box-shadow .2s ease;
+}
+.related-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(44,44,42,0.10); }
+.related-card-img {
+  aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
+  background: #FAF7F3; font-size: 32px; overflow: hidden;
+}
+.related-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.related-card-name {
+  font-size: 12.5px; line-height: 1.3; padding: 8px 10px 2px; color: var(--charcoal);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.related-card-price { font-size: 13px; font-weight: 600; padding: 0 10px 10px; color: var(--charcoal); }
+@media (min-width: 761px) {
+  .modal-related-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
 body.scroll-locked {
   position: fixed;
   left: 0;
@@ -3718,6 +3745,33 @@ function fmtPrice(n) {
   return Number(n) > 0 ? fmtNum(n) + ' ₴' : 'За домовленістю';
 }
 
+// Підбирає товари для блоку «Вам також може сподобатися»: спершу з тієї ж
+// категорії (крім самого товару й архівних), за нестачі — добирає з інших категорій.
+function getRelatedProducts(p, limit) {
+  limit = limit || 4;
+  const visible = PRODUCTS.filter(x => !x.archived && x.id !== p.id);
+  const sameCat = visible.filter(x => x.category === p.category);
+  const rest = visible.filter(x => x.category !== p.category);
+  return sameCat.concat(rest).slice(0, limit);
+}
+
+function renderRelatedProducts(p) {
+  const items = getRelatedProducts(p, 4);
+  if (!items.length) return '';
+  return `
+  <div class="modal-related">
+    <div class="modal-related-title">Вам також може сподобатися</div>
+    <div class="modal-related-grid">
+      ${items.map(rp => `
+        <div class="related-card" onclick="openProduct(${rp.id})">
+          <div class="related-card-img">${rp.image ? `<img src="${rp.image}" alt="${rp.name}" loading="lazy">` : '🛏️'}</div>
+          <div class="related-card-name">${rp.name}</div>
+          <div class="related-card-price">${fmtPrice(getProductPrice(rp, rp.sizes[0]))}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 const SIZE_PRICES = {
   'Індивідуальний': { price: 0, old: null },
   'Полуторний':  { price: 890,  old: 1250 },
@@ -4136,6 +4190,7 @@ function openProduct(productId) {
       </div>
       <div class="size-chart" id="modal-size-chart">${renderSizeChart(selectedSize, selectedPillow)}</div>
       <p class="color-note">Зверніть увагу: відтінок кольору товару може незначно відрізнятися від зображення на екрані через індивідуальні налаштування монітора або освітлення під час фотозйомки.</p>
+      ${renderRelatedProducts(p)}
       <div class="product-modal-footer">
         <div class="price-wrap">
           ${getOldPrice(p, selectedSize) ? `<span class="price-old" id="modal-price-old">${getOldPrice(p, selectedSize).toLocaleString('uk')} ₴</span>` : ''}
@@ -4145,6 +4200,8 @@ function openProduct(productId) {
       </div>
     </div>`;
   document.getElementById('product-modal').classList.add('open');
+  const modalScroller = contentEl.closest('.modal');
+  if (modalScroller) modalScroller.scrollTop = 0;
   lockBodyScroll();
   syncOverlayHistory();
   try { if(typeof _seoSlug==='function'){ history.replaceState(null,'','/product/'+_seoSlug(p.name)); } } catch(e){}
