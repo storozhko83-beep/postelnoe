@@ -4644,49 +4644,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updateDeliveryUI();
 });
 
-// Фото товарів зберігаються як звичайні https-URL (Cloudinary), а не як
-// base64 data-URI. Тому Telegram-у просто передаємо лінк — він сам його
-// завантажить на своєму боці; перекодовувати у Blob у браузері не потрібно.
-async function sendOrderPhotos(token, chatIds, orderNo, items) {
-  // унікальні товари з фото
-  const seen = new Set();
-  const photos = [];
-  items.forEach(i => {
-    if (seen.has(i.productId)) return;
-    seen.add(i.productId);
-    const p = PRODUCTS.find(x => x.id === i.productId);
-    if (p && p.image && /^https?:\/\//i.test(p.image)) {
-      photos.push({ url: p.image, caption: `📦 ${orderNo}: ${i.name}${i.sku ? ` [арт. ${i.sku}]` : ''}` });
-    }
-  });
-  if (!photos.length) return;
-  for (const chatId of chatIds) {
-    try {
-      if (photos.length === 1) {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, photo: photos[0].url, caption: photos[0].caption })
-        });
-        const data = await res.json();
-        if (!data.ok) console.error(`Telegram photo (chat ${chatId}):`, data.description);
-      } else {
-        for (let off = 0; off < photos.length; off += 10) {
-          const chunk = photos.slice(off, off + 10);
-          const res = await fetch(`https://api.telegram.org/bot${token}/sendMediaGroup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chatId, media: chunk.map(ph => ({ type: 'photo', media: ph.url, caption: ph.caption })) })
-          });
-          const data = await res.json();
-          if (!data.ok) console.error(`Telegram media group (chat ${chatId}):`, data.description);
-        }
-      }
-    } catch (e) {
-      console.error(`Telegram photos (chat ${chatId}):`, e);
-    }
-  }
-}
+// Відправка фото товарів у Telegram перенесена на сервер (functions/notify-order.js),
+// щоб токен бота не був видимий у клієнтському коді.
 
 function buildReceiptHtml(o) {
   const rows = o.items.map((i, idx) => `
@@ -4775,8 +4734,6 @@ async function submitOrder() {
     return { label, raw: d };
   }
 
-  const TG_TOKEN  = '8990884212:AAGdeZUkuITEKs0WzOgufHq7umWOyNVXDl8';   // від @BotFather
-  const TG_CHATIDS = ['7132928426', '537651311', '8818256874'];   // особисті або групи — замовлення йде в усі чати
   const EMAILJS_SERVICE_ID  = 'service_frudcia';
   const EMAILJS_TEMPLATE_ID = 'template_ue4mw1k';
   const EMAILJS_PUBLIC_KEY  = '63NNJiFnk1Bb5RRhP';
@@ -4795,52 +4752,27 @@ async function submitOrder() {
   submitBtn.textContent = 'Надсилаємо...';
   submitBtn.disabled = true;
 
-  const itemLines = cart.map(i =>
-    `  • <b>${i.name}</b>${i.sku ? ` [арт. ${i.sku}]` : ''} (${i.size}, наволочки ${i.pillow || '70×70'}${i.fittedSheet ? ', простинь на резинці' : ''}) × ${i.qty} — ${i.price > 0 ? (i.price * i.qty).toLocaleString('uk') + ' ₴' : 'за домовленістю'}`
-  ).join('\n');
   const total = cartTotal();
   const now = new Date().toLocaleString('uk', { timeZone: 'Europe/Kiev' });
   const d = new Date();
   const orderNo = `SMN-${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Math.floor(100 + Math.random()*900))}`;
   const src = getOrderSource();
 
-  const text = [
-    `🛏 <b>Нове замовлення № ${orderNo}</b>`,
-    `🕐 ${now}`,
-    `🔎 <b>Джерело:</b> ${src.label}`,
-    ``,
-    `👤 <b>Ім’я:</b> ${name}`,
-    `📞 <b>Телефон:</b> ${phone}`,
-    email    ? `📧 <b>Email:</b> ${email}` : null,
-    `🚚 <b>Доставка:</b> ${delivery}`,
-    address  ? `📍 <b>Адреса:</b> ${address}` : null,
-    ``,
-    `🧾 <b>Склад замовлення:</b>`,
-    itemLines,
-    ``,
-    `💰 <b>Разом: ${total.toLocaleString('uk')} ₴${cart.some(i => !(i.price > 0)) ? ' + індивідуальні позиції (ціна за домовленістю)' : ''}</b>`,
-    comment  ? `\n💬 <b>Коментар:</b> ${comment}` : null,
-  ].filter(l => l !== null).join('\n');
+  const itemsPayload = cart.map(i => {
+    const p = PRODUCTS.find(x => x.id === i.productId);
+    return { name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet,
+      qty: i.qty, price: i.price, productId: i.productId, image: (p && p.image) || '' };
+  });
 
   try {
-    const results = await Promise.all(TG_CHATIDS.map(async chatId => {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
-        });
-        const data = await res.json();
-        if (!data.ok) { console.error(`Telegram (chat ${chatId}):`, data.description); return false; }
-        return true;
-      } catch (e) {
-        console.error(`Telegram (chat ${chatId}):`, e);
-        return false;
-      }
-    }));
-    if (!results.some(ok => ok)) throw new Error('Не вдалося надіслати в жоден чат');
-
-    sendOrderPhotos(TG_TOKEN, TG_CHATIDS, orderNo, cart.slice());
+    const res = await fetch('/notify-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderNo, name, phone, email, delivery, address, comment, total,
+        source: src.label, items: itemsPayload })
+    });
+    const data = await res.json().catch(() => ({ ok: false }));
+    if (!data.ok) throw new Error(data.error || 'Не вдалося надіслати замовлення');
 
     if (email && EMAILJS_TEMPLATE_ID) {
       sendReceiptEmail({ orderNo, name, email, delivery, address, comment, items: cart.slice(), total, now,
