@@ -5170,6 +5170,14 @@ const CAT_LABELS = { biaz: 'Бязь Gold Lux', ranfors: 'Ранфорс', strip
 // ціни фактично стоять у всіх наявних товарів цих двох категорій.
 // Для "Страйп-сатин" — зразок взято з товару "Кремовий страйп" (SS-0001).
 // Підставляються автоматично у форму товару, коли обрано відповідну категорію.
+// Матеріали за категорією — підставляються автоматично, щоб карточка товару
+// завжди показувала правильний склад (а не завжди "Бязь", як було раніше).
+const CAT_MATERIALS = {
+  biaz:    ['Бязь', 'Бавовна 100%'],
+  ranfors: ['Ранфорс', 'Бавовна 100%'],
+  stripe:  ['Страйп-сатин', 'Бавовна 100%'],
+};
+
 const CATEGORY_DEFAULT_PRICES = {
   biaz: {
     'Полуторний':  { price: SIZE_PRICES['Полуторний'].price,  old: SIZE_PRICES['Полуторний'].old },
@@ -6110,7 +6118,7 @@ function adminSave() {
     p = PRODUCTS.find(x => x.id === _adminEditId);
   } else {
     const maxId = PRODUCTS.reduce((m, x) => Math.max(m, x.id), 0);
-    p = { id: maxId + 1, materials: ['Бязь', 'Бавовна 100%'], price: 890, oldPrice: null, color: '#EFE9E0', svgColor: '#9AA88F' };
+    p = { id: maxId + 1, materials: CAT_MATERIALS[cat] || ['Бязь', 'Бавовна 100%'], price: 890, oldPrice: null, color: '#EFE9E0', svgColor: '#9AA88F' };
     PRODUCTS.push(p);
   }
   p.name = name;
@@ -6122,7 +6130,10 @@ function adminSave() {
   p.badgeText = badge ? badgeTextMap[badge] : null;
   p.sizes = sizes;
   p.sizePrices = sizePrices.length ? sizePrices : null;
-  if (!p.materials) p.materials = ['Бязь', 'Бавовна 100%'];
+  // Матеріали завжди підлаштовуємо під обрану категорію — поля "Матеріали" в
+  // формі немає, тож це єдине джерело правди, і воно має бути правильним
+  // навіть якщо раніше товару випадково приписали не ту категорію матеріалу.
+  p.materials = CAT_MATERIALS[cat] || p.materials || ['Бязь', 'Бавовна 100%'];
   const imgs = (Array.isArray(_adminPhotos) ? _adminPhotos : []).filter(s => typeof s === 'string' && s);
   p.images = imgs;
   if (imgs.length) p.image = imgs[0];
