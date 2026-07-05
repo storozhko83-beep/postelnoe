@@ -4721,7 +4721,9 @@ async function submitOrder() {
     try { d = JSON.parse(localStorage.getItem('somnium_source') || '{}'); } catch(e) {}
     let label;
     if (d.utm_source) {
-      label = [d.utm_source, d.utm_medium, d.utm_campaign].filter(Boolean).join(' / ');
+      const parts = [d.utm_source, d.utm_medium];
+      if (d.utm_content) parts.push('ad:' + d.utm_content); // ID оголошення (Facebook {{ad.id}}), а не кампанія
+      label = parts.filter(Boolean).join(' / ');
     } else if (d.fbclid) {
       label = 'Facebook/Instagram Ads (fbclid)';
     } else if (d.gclid) {
