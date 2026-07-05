@@ -3784,6 +3784,7 @@ let cart = [];
 let selectedSizes = {};
 let selectedPillows = {};
 let selectedFittedSheet = {};
+let selectedBortiki = {}; // "Бортики" — додаткова опція, тільки для категорії "Страйп-сатин"
 const PILLOW_OPTIONS = ['70×70', '50×70'];
 
 function findSizePrice(product, size) {
@@ -4186,6 +4187,7 @@ function openProduct(productId) {
       <div class="size-section">
         <div class="size-options" id="modal-fitted-sheet-option">
           <button class="size-btn ${selectedFittedSheet[p.id] ? 'selected' : ''}" onclick="toggleModalFittedSheet(${p.id}, this)">Простирадло на резинці</button>
+          ${p.category === 'stripe' ? `<button class="size-btn ${selectedBortiki[p.id] ? 'selected' : ''}" onclick="toggleModalBortiki(${p.id}, this)">Бортики</button>` : ''}
         </div>
       </div>
       <div class="size-chart" id="modal-size-chart">${renderSizeChart(selectedSize, selectedPillow)}</div>
@@ -4260,6 +4262,11 @@ function toggleModalFittedSheet(productId, btn) {
   selectedFittedSheet[productId] = !selectedFittedSheet[productId];
   btn.classList.toggle('selected', selectedFittedSheet[productId]);
   checkPrepaymentPopup(productId);
+}
+
+function toggleModalBortiki(productId, btn) {
+  selectedBortiki[productId] = !selectedBortiki[productId];
+  btn.classList.toggle('selected', selectedBortiki[productId]);
 }
 
 let pendingPrepaymentProductId = null;
@@ -4344,13 +4351,14 @@ function addToCart(productId) {
   const size = selectedSizes[productId] || p.sizes[0];
   const pillow = selectedPillows[productId] || PILLOW_OPTIONS[0];
   const fittedSheet = !!selectedFittedSheet[productId];
+  const bortiki = p.category === 'stripe' ? !!selectedBortiki[productId] : false;
   const price = getProductPrice(p, size);
-  const key = `${productId}-${size}-${pillow}-${fittedSheet ? 'fs' : 'nofs'}`;
+  const key = `${productId}-${size}-${pillow}-${fittedSheet ? 'fs' : 'nofs'}-${bortiki ? 'b' : 'nob'}`;
   const existing = cart.find(i => i.key === key);
   if (existing) {
     existing.qty++;
   } else {
-    cart.push({ key, productId, name: p.name, sku: p.sku || null, collection: p.collection, size, pillow, fittedSheet, price, qty: 1, color: p.color, svgColor: p.svgColor });
+    cart.push({ key, productId, name: p.name, sku: p.sku || null, collection: p.collection, size, pillow, fittedSheet, bortiki, price, qty: 1, color: p.color, svgColor: p.svgColor });
   }
   ['btn-' + productId, 'btn-mob-' + productId].forEach(id => {
     const btn = document.getElementById(id);
@@ -4407,7 +4415,7 @@ function updateCartUI() {
         <div class="cart-item-img">${(PRODUCTS.find(p => p.id === i.productId) || {}).image ? `<img src="${PRODUCTS.find(p => p.id === i.productId).image}" alt="${i.name}" class="cart-item-photo">` : renderIcon(i.color, i.svgColor)}</div>
         <div class="cart-item-info">
           <div class="name">${i.name}</div>
-          <div class="meta">${i.collection} · ${i.size}${i.pillow ? ` · нав. ${i.pillow}` : ``}${i.fittedSheet ? ` · простинь на резинці` : ``}</div>
+          <div class="meta">${i.collection} · ${i.size}${i.pillow ? ` · нав. ${i.pillow}` : ``}${i.fittedSheet ? ` · простинь на резинці` : ``}${i.bortiki ? ` · бортики` : ``}</div>
           <div class="cart-qty">
             <button class="qty-btn" onclick="changeQty('${i.key}', -1)">−</button>
             <span class="qty-num">${i.qty}</span>
@@ -4463,7 +4471,7 @@ function openOrder() {
     const priceHtml = i.price > 0
       ? (oldP ? `<span style="text-decoration:line-through;color:#c0392b;margin-right:6px;font-size:12px">${fmtNum(oldP * i.qty)} ₴</span>` : '') + `<span style="font-weight:700">${fmtNum(i.price * i.qty)} ₴</span>`
       : 'за домовленістю';
-    return `<div class="order-line"><span>${i.name} (${i.size}${i.pillow ? `, нав. ${i.pillow}` : ``}${i.fittedSheet ? `, простинь на резинці` : ``}) × ${i.qty}</span><span>${priceHtml}</span></div>`;
+    return `<div class="order-line"><span>${i.name} (${i.size}${i.pillow ? `, нав. ${i.pillow}` : ``}${i.fittedSheet ? `, простинь на резинці` : ``}${i.bortiki ? `, бортики` : ``}) × ${i.qty}</span><span>${priceHtml}</span></div>`;
   }).join('');
   const hasCustomSum = cart.some(i => !(i.price > 0));
   const oldTotal = cart.reduce((s, i) => {
@@ -4653,7 +4661,7 @@ function buildReceiptHtml(o) {
       <td style="padding:10px 12px;border-bottom:1px solid #EFE9E2;color:#8A8178;font-size:13px">${idx + 1}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #EFE9E2;color:#2E2A25;font-size:14px">
         <strong>${i.name}</strong><br>
-        <span style="color:#8A8178;font-size:12px">${i.size} · наволочки ${i.pillow || '70×70'} см${i.fittedSheet ? ' · простинь на резинці' : ''}</span>
+        <span style="color:#8A8178;font-size:12px">${i.size} · наволочки ${i.pillow || '70×70'} см${i.fittedSheet ? ' · простинь на резинці' : ''}${i.bortiki ? ' · бортики' : ''}</span>
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #EFE9E2;color:#2E2A25;font-size:14px;text-align:center;white-space:nowrap">${i.price > 0 ? `${i.qty} × ${i.price.toLocaleString('uk')} ₴` : `${i.qty} шт`}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #EFE9E2;color:#2E2A25;font-size:14px;text-align:right;white-space:nowrap"><strong>${i.price > 0 ? (i.price * i.qty).toLocaleString('uk') + ' ₴' : 'за домовленістю'}</strong></td>
@@ -4762,7 +4770,7 @@ async function submitOrder() {
 
   const itemsPayload = cart.map(i => {
     const p = PRODUCTS.find(x => x.id === i.productId);
-    return { name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet,
+    return { name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet, bortiki: !!i.bortiki,
       qty: i.qty, price: i.price, productId: i.productId, image: (p && p.image) || '' };
   });
 
@@ -4792,7 +4800,7 @@ async function submitOrder() {
     if (typeof clarity === 'function') { clarity('set', 'purchase', String(total || 0)); }
     pushLeadToCloud({ orderNo, name, phone, email, delivery, address, comment, total,
       source: src.label, sourceRaw: src.raw,
-      items: cart.map(i => ({ name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet, qty: i.qty, price: i.price })) });
+      items: cart.map(i => ({ name: i.name, sku: i.sku || '', size: i.size, pillow: i.pillow || '70×70', fittedSheet: !!i.fittedSheet, bortiki: !!i.bortiki, qty: i.qty, price: i.price })) });
     cart = [];
     updateCartUI();
   } catch (err) {
@@ -5099,6 +5107,16 @@ document.addEventListener('keydown', e => {
 <script>
 // ===== ADMIN LOGIC =====
 const CAT_LABELS = { biaz: 'Бязь Gold Lux', ranfors: 'Ранфорс', stripe: 'Страйп-сатин' };
+// Ціни за замовчуванням для категорії «Страйп-сатин» — зразок взято з товару "Кремовий страйп" (SS-0001).
+// Підставляються автоматично у форму нового товару, коли обрано цю категорію (тільки в порожні поля).
+const CATEGORY_DEFAULT_PRICES = {
+  stripe: {
+    'Полуторний':  { price: 1490, old: 1950 },
+    'Двоспальний': { price: 1690, old: 2195 },
+    'Євро':        { price: 1890, old: 2490 },
+    'Сімейний':    { price: 2150, old: 2795 },
+  },
+};
 const ALL_SIZES = ['Полуторний', 'Двоспальний', 'Євро', 'Сімейний', 'Індивідуальний'];
 let _adminEditId = null;
 let _adminPhoto = undefined; // undefined = unchanged, '' = removed, dataURI = new
@@ -5449,7 +5467,7 @@ function redrawLeadList(){
   el.innerHTML = list.map(l => {
     const m = leadStatusMeta(l.status||'new');
     const dt = new Date(l.createdAt).toLocaleString('uk',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const items = (l.items||[]).map(i => `${escHtml(i.name)} (${escHtml(i.size||'')}${i.pillow?', нав. '+escHtml(i.pillow):''}${i.fittedSheet?', простинь на резинці':''}) \u00d7${i.qty}${!((Number(i.price)||0)>0) ? ' <span style="color:var(--terra)">— індивід. пошив</span>' : ''}`).join('<br>');
+    const items = (l.items||[]).map(i => `${escHtml(i.name)} (${escHtml(i.size||'')}${i.pillow?', нав. '+escHtml(i.pillow):''}${i.fittedSheet?', простинь на резинці':''}${i.bortiki?', бортики':''}) \u00d7${i.qty}${!((Number(i.price)||0)>0) ? ' <span style="color:var(--terra)">— індивід. пошив</span>' : ''}`).join('<br>');
     const sel = LEAD_STATUSES.map(s => `<option value="${s.key}"${(l.status||'new')===s.key?' selected':''}>${s.label}</option>`).join('');
     const hasCustom = leadHasCustomItems(l);
     const customBlock = hasCustom ? `
@@ -5654,7 +5672,7 @@ function exportLeadsCSV(){
   const head = ['Дата','\u2116','Ім\u02bcя','Телефон','Email','Джерело','Доставка','Адреса','Товари','Сума','Статус','Коментар'];
   const esc = s => '"' + String(s == null ? '' : s).replace(/"/g,'""') + '"';
   const rows = _leads.map(l => {
-    const items = (l.items||[]).map(i => `${i.name} (${i.size||''}${i.pillow?', нав. '+i.pillow:''}${i.fittedSheet?', простинь на резинці':''}) x${i.qty}`).join('; ');
+    const items = (l.items||[]).map(i => `${i.name} (${i.size||''}${i.pillow?', нав. '+i.pillow:''}${i.fittedSheet?', простинь на резинці':''}${i.bortiki?', бортики':''}) x${i.qty}`).join('; ');
     return [new Date(l.createdAt).toLocaleString('uk'), l.orderNo||'', l.name||'', l.phone||'', l.email||'', l.source||'', l.delivery||'', l.address||'', items, leadEffectiveTotal(l), leadStatusMeta(l.status||'new').label, l.comment||''].map(esc).join(',');
   });
   const csv = '\ufeff' + [head.map(esc).join(',')].concat(rows).join('\r\n');
@@ -5680,7 +5698,7 @@ function adminEdit(id) {
       <label>Назва товару *</label>
       <input type="text" id="af-name" value="${p ? escAttr(p.name) : ''}" placeholder="Напр. Оливкові кола">
       <label>Категорія *</label>
-      <select id="af-cat">
+      <select id="af-cat" onchange="applyCategoryDefaultPrices(this.value, true)">
         ${Object.entries(CAT_LABELS).map(([k, v]) => `<option value="${k}" ${cat === k ? 'selected' : ''}>${v}</option>`).join('')}
       </select>
       <label>Артикул (видно тільки вам у замовленні)</label>
@@ -5722,6 +5740,25 @@ function adminEdit(id) {
       </div>
     </div>`;
   renderAdminPhotos();
+  applyCategoryDefaultPrices(cat, !p); // !p === true, коли створюємо новий товар
+}
+
+// При виборі категорії підставляє типові ціни для цієї категорії (наразі є
+// зразок тільки для «Страйп-сатин»). force=true — перезаписує поле навіть
+// якщо в ньому вже стоїть якесь значення (напр. загальний шаблон цін для
+// нового товару); force=false — заповнює тільки порожні поля (щоб не
+// затерти реальні збережені ціни під час відкриття існуючого товару).
+function applyCategoryDefaultPrices(cat, force) {
+  const defaults = CATEGORY_DEFAULT_PRICES[cat];
+  if (!defaults) return;
+  document.querySelectorAll('.af-price, .af-old').forEach(inp => {
+    const size = inp.dataset.size;
+    const d = defaults[size];
+    if (!d) return;
+    if (!force && inp.value) return;
+    if (inp.classList.contains('af-price')) inp.value = d.price;
+    if (inp.classList.contains('af-old')) inp.value = d.old;
+  });
 }
 
 // Рендерить мініатюри доданих фото з кнопками: зробити головним / порядок / видалити.
