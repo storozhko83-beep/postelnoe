@@ -5406,6 +5406,7 @@ function buildLeadsShell(){
       <button class="admin-btn" onclick="renderAdmin()">\u2190 Назад до товарів</button>
       <button class="admin-btn" onclick="renderLeads(true)">\u21bb Оновити</button>
       <button class="admin-btn" onclick="exportLeadsCSV()">\u2913 Excel / CSV</button>
+      <button class="admin-btn" onclick="renderDeletedLeads()">\ud83d\uddd1 Видалені замовлення</button>
     </div>
     <div class="admin-body">
       <div id="leads-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">${leadsStatsHtml()}</div>
@@ -5527,7 +5528,7 @@ async function leadSetStatus(id, status){
 }
 
 async function leadDelete(id){
-  if (!confirm('Видалити це замовлення?')) return;
+  if (!confirm('Перемістити це замовлення в архів видалених?')) return;
   const backup = _leads.slice();
   _leads = _leads.filter(x => x.id !== id);
   redrawLeadList();
@@ -5544,6 +5545,106 @@ async function leadDelete(id){
     redrawLeadList();
     refreshLeadsStats();
     alert('Не вдалося видалити. Перевірте з\u02bcєднання.');
+  }
+}
+
+let _deletedLeads = [];
+
+async function renderDeletedLeads(){
+  const content = document.getElementById('admin-content');
+  const pw = getLeadsPassword();
+  if (pw === null) return;
+  content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderLeads(false)">\u2190 Назад до замовлень</button></div><div class="admin-body"><p style="color:var(--mid)">Завантаження архіву\u2026</p></div>';
+  try {
+    const r = await fetch(SOMNIUM_API + '/leads-deleted', { headers: leadsAuthHeaders() });
+    if (r.status === 401) {
+      sessionStorage.removeItem('somnium_leads_pw');
+      content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderLeads(false)">\u2190 Назад до замовлень</button><button class="admin-btn primary" onclick="renderDeletedLeads()">\u21bb Спробувати ще раз</button></div><div class="admin-body"><p style="color:var(--terra)">Невірний пароль.</p></div>';
+      return;
+    }
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'err');
+    _deletedLeads = j.leads || [];
+  } catch(e) {
+    content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderLeads(false)">\u2190 Назад до замовлень</button><button class="admin-btn" onclick="renderDeletedLeads()">\u21bb Оновити</button></div><div class="admin-body"><p style="color:var(--terra)">Не вдалося завантажити архів.</p></div>';
+    return;
+  }
+  buildDeletedLeadsShell();
+}
+
+function buildDeletedLeadsShell(){
+  const content = document.getElementById('admin-content');
+  content.innerHTML = `
+    <div class="admin-toolbar">
+      <button class="admin-btn" onclick="renderLeads(false)">\u2190 Назад до замовлень</button>
+      <button class="admin-btn" onclick="renderDeletedLeads()">\u21bb Оновити</button>
+    </div>
+    <div class="admin-body">
+      <p style="color:var(--mid);font-size:13px;margin-bottom:10px">\ud83d\uddd1 Архів видалених замовлень \u2014 ${_deletedLeads.length} шт. Дані зберігаються, доки ви не видалите їх остаточно.</p>
+      <div id="deleted-leads-list"></div>
+    </div>`;
+  redrawDeletedLeadList();
+}
+
+function redrawDeletedLeadList(){
+  const el = document.getElementById('deleted-leads-list');
+  if (!el) return;
+  el.innerHTML = _deletedLeads.map(l => {
+    const dt = new Date(l.createdAt).toLocaleString('uk',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const delDt = l.deletedAt ? new Date(l.deletedAt).toLocaleString('uk',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    const items = (l.items||[]).map(i => `${escHtml(i.name)} (${escHtml(i.size||'')}) \u00d7${i.qty}`).join('<br>');
+    return `<div style="background:#faf8f5;border:1px solid #ECE7E0;border-radius:12px;padding:12px;margin-bottom:10px;opacity:0.85">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+        <div style="font-weight:700;color:var(--dark)">${escHtml(l.name||'\u2014')} <span style="font-weight:400;color:var(--mid);font-size:12px">${escHtml(l.orderNo||'')}</span></div>
+        <span style="font-size:11px;color:var(--terra)">видалено ${delDt}</span>
+      </div>
+      <div style="font-size:13px;color:var(--mid);margin-top:4px">\ud83d\udcde ${escHtml(l.phone||'')} \u00b7 \ud83d\udd50 замовлено ${dt}</div>
+      <div style="font-size:13px;color:var(--dark);margin-top:6px">${items}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px">
+        <div style="font-weight:700;color:var(--dark)">${leadEffectiveTotal(l).toLocaleString('uk')} \u20b4</div>
+        <div style="display:flex;gap:6px">
+          <button class="admin-btn" style="padding:5px 10px;font-size:12px" onclick="leadRestore('${l.id}')">\u21b6 Відновити</button>
+          <button class="admin-btn" style="padding:5px 10px;font-size:12px;color:var(--terra)" onclick="leadPurge('${l.id}')">Видалити назавжди</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<p style="color:var(--mid)">Архів порожній.</p>';
+}
+
+async function leadRestore(id){
+  const backup = _deletedLeads.slice();
+  _deletedLeads = _deletedLeads.filter(x => x.id !== id);
+  redrawDeletedLeadList();
+  try {
+    const r = await fetch(SOMNIUM_API + '/lead-restore', {
+      method: 'POST', headers: leadsAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ id })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error('fail');
+  } catch(e) {
+    _deletedLeads = backup;
+    redrawDeletedLeadList();
+    alert('Не вдалося відновити замовлення. Перевірте з\u02bcєднання.');
+  }
+}
+
+async function leadPurge(id){
+  if (!confirm('Видалити НАЗАВЖДИ? Це неможливо буде відмінити.')) return;
+  const backup = _deletedLeads.slice();
+  _deletedLeads = _deletedLeads.filter(x => x.id !== id);
+  redrawDeletedLeadList();
+  try {
+    const r = await fetch(SOMNIUM_API + '/lead-purge', {
+      method: 'POST', headers: leadsAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ id })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error('fail');
+  } catch(e) {
+    _deletedLeads = backup;
+    redrawDeletedLeadList();
+    alert('Не вдалося видалити остаточно. Перевірте з\u02bcєднання.');
   }
 }
 
