@@ -5486,9 +5486,13 @@ async function renderLeads(forceFetch){
 function leadsStatsHtml(){
   const now = new Date();
   const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const weekAgo = Date.now() - 7*24*3600*1000;
+  // Початок поточного тижня — понеділок 00:00. getDay(): 0=нд,1=пн,...,6=сб.
+  // Тому зсув до понеділка: якщо неділя (0) — це 6 днів тому, інакше day-1.
+  const dayOfWeek = now.getDay();
+  const diffToMonday = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
+  const startWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diffToMonday).getTime();
   const todayCount = _leads.filter(l => l.createdAt >= startToday).length;
-  const weekCount  = _leads.filter(l => l.createdAt >= weekAgo).length;
+  const weekCount  = _leads.filter(l => l.createdAt >= startWeek).length;
   const newCount   = _leads.filter(l => (l.status||'new') === 'new').length;
   const soldSum = _leads.filter(l => (l.status||'new') === 'paid').reduce((s,l) => s + leadEffectiveTotal(l), 0);
   const potentialSum = _leads.filter(l => { const st = l.status||'new'; return st !== 'paid' && st !== 'cancelled'; }).reduce((s,l) => s + leadEffectiveTotal(l), 0);
