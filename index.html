@@ -5491,13 +5491,23 @@ function leadsStatsHtml(){
   const dayOfWeek = now.getDay();
   const diffToMonday = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
   const startWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diffToMonday).getTime();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const startYear  = new Date(now.getFullYear(), 0, 1).getTime();
   const todayCount = _leads.filter(l => l.createdAt >= startToday).length;
   const weekCount  = _leads.filter(l => l.createdAt >= startWeek).length;
   const newCount   = _leads.filter(l => (l.status||'new') === 'new').length;
   const soldSum = _leads.filter(l => (l.status||'new') === 'paid').reduce((s,l) => s + leadEffectiveTotal(l), 0);
   const potentialSum = _leads.filter(l => { const st = l.status||'new'; return st !== 'paid' && st !== 'cancelled'; }).reduce((s,l) => s + leadEffectiveTotal(l), 0);
+
+  const monthLeads = _leads.filter(l => l.createdAt >= startMonth);
+  const yearLeads  = _leads.filter(l => l.createdAt >= startYear);
+  const cancelRate = (arr) => arr.length ? Math.round(arr.filter(l => (l.status||'new')==='cancelled').length / arr.length * 100) : 0;
+  const monthCancelPct = cancelRate(monthLeads);
+  const yearCancelPct  = cancelRate(yearLeads);
+
   const stat = (v,tt) => `<div style="flex:1;min-width:84px;background:#fff;border:1px solid #ECE7E0;border-radius:12px;padding:10px 12px"><div style="font-size:19px;font-weight:700;color:var(--dark)">${v}</div><div style="font-size:11px;color:var(--mid)">${tt}</div></div>`;
-  return `${stat(todayCount,'сьогодні')}${stat(weekCount,'за тиждень')}${stat(newCount,'нових')}${stat(_leads.length,'усього')}${stat(potentialSum.toLocaleString('uk')+' \u20b4','потенційний прибуток')}${stat(soldSum.toLocaleString('uk')+' \u20b4','продано')}`;
+  const statPct = (v,tt) => `<div style="flex:1;min-width:84px;background:#fff;border:1px solid ${v>=20?'#F2D4C8':'#ECE7E0'};border-radius:12px;padding:10px 12px"><div style="font-size:19px;font-weight:700;color:${v>=20?'var(--terra)':'var(--dark)'}">${v}%</div><div style="font-size:11px;color:var(--mid)">${tt}</div></div>`;
+  return `${stat(todayCount,'сьогодні')}${stat(weekCount,'за тиждень')}${stat(newCount,'нових')}${stat(_leads.length,'усього')}${stat(potentialSum.toLocaleString('uk')+' \u20b4','потенційний прибуток')}${stat(soldSum.toLocaleString('uk')+' \u20b4','продано')}${statPct(monthCancelPct,'% відмов за місяць')}${statPct(yearCancelPct,'% відмов за рік')}`;
 }
 function refreshLeadsStats(){
   const el = document.getElementById('leads-stats');
@@ -5574,6 +5584,11 @@ function redrawLeadList(){
       <div style="font-size:13px;color:var(--dark);margin-top:6px">${items}</div>
       ${l.comment?`<div style="font-size:12px;color:var(--mid);margin-top:4px;font-style:italic">\ud83d\udcac ${escHtml(l.comment)}</div>`:''}
       ${customBlock}
+      <div style="display:flex;gap:6px;align-items:flex-start;margin-top:8px;background:#F7F5F1;border:1px solid #ECE7E0;border-radius:8px;padding:8px 10px">
+        <span style="font-size:14px;line-height:1.6">\ud83d\udcdd</span>
+        <textarea id="note-${l.id}" placeholder="Нотатка до замовлення (видно тільки вам)\u2026" rows="1" style="flex:1;font-size:13px;padding:4px 6px;border:none;background:transparent;resize:vertical;font-family:inherit;color:var(--dark)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${escHtml(l.note||'')}</textarea>
+        <button class="admin-btn" style="padding:5px 10px;font-size:12px" onclick="leadSetNote('${l.id}')">Зберегти</button>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
         <div style="font-weight:700;color:var(--dark)">${leadEffectiveTotal(l).toLocaleString('uk')} \u20b4${(Number(l.customPrice)||0) > 0 ? `<span style="font-weight:400;color:var(--mid);font-size:11px"> (з них ${Number(l.customPrice).toLocaleString('uk')} \u20b4 індивід.)</span>` : ''}</div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -5608,6 +5623,27 @@ async function leadSetCustomPrice(id){
     redrawLeadList();
     refreshLeadsStats();
     cloudToast('\u26a0 Не вдалося зберегти ціну. Перевірте з\u02bcєднання або серверну функцію /lead-status.', false);
+  }
+}
+
+async function leadSetNote(id){
+  const ta = document.getElementById('note-' + id);
+  if (!ta) return;
+  const note = ta.value;
+  const l = _leads.find(x => x.id === id);
+  const prev = l ? l.note : null;
+  if (l) l.note = note;
+  try {
+    const r = await fetch(SOMNIUM_API + '/lead-status', {
+      method: 'POST', headers: leadsAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ id, status: l ? (l.status||'new') : 'new', note })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error('fail');
+    cloudToast('\u2713 Нотатку збережено', true);
+  } catch(e) {
+    if (l) l.note = prev;
+    cloudToast('\u26a0 Не вдалося зберегти нотатку. Перевірте з\u02bcєднання.', false);
   }
 }
 
