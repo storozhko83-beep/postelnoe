@@ -2615,7 +2615,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
         </div>
         <div class="form-group">
           <label>Телефон</label>
-          <input type="tel" id="order-phone" placeholder="+38 050 000 0000">
+          <input type="tel" id="order-phone" placeholder="+38 050 000 0000" oninput="scheduleAbandonedCartCheck()">
         </div>
         <div class="form-group">
           <label>Email</label>
@@ -4781,27 +4781,73 @@ async function sendReceiptEmail(o) {
   }
 }
 
-async function submitOrder() {
-  function getOrderSource() {
-    let d = {};
-    try { d = JSON.parse(localStorage.getItem('somnium_source') || '{}'); } catch(e) {}
-    let label;
-    if (d.utm_source) {
-      const parts = [d.utm_source, d.utm_medium];
-      if (d.utm_content) parts.push('ad:' + d.utm_content); // ID оголошення (Facebook {{ad.id}}), а не кампанія
-      label = parts.filter(Boolean).join(' / ');
-    } else if (d.fbclid) {
-      label = 'Facebook/Instagram Ads (fbclid)';
-    } else if (d.gclid) {
-      label = 'Google Ads (gclid)';
-    } else if (d.referrer) {
-      try { label = 'Перехід з ' + new URL(d.referrer).hostname; } catch(e) { label = 'Перехід з посилання'; }
-    } else {
-      label = 'Прямий захід (без джерела)';
-    }
-    return { label, raw: d };
+function getOrderSource() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem('somnium_source') || '{}'); } catch(e) {}
+  let label;
+  if (d.utm_source) {
+    const parts = [d.utm_source, d.utm_medium];
+    if (d.utm_content) parts.push('ad:' + d.utm_content); // ID оголошення (Facebook {{ad.id}}), а не кампанія
+    label = parts.filter(Boolean).join(' / ');
+  } else if (d.fbclid) {
+    label = 'Facebook/Instagram Ads (fbclid)';
+  } else if (d.gclid) {
+    label = 'Google Ads (gclid)';
+  } else if (d.referrer) {
+    try { label = 'Перехід з ' + new URL(d.referrer).hostname; } catch(e) { label = 'Перехід з посилання'; }
+  } else {
+    label = 'Прямий захід (без джерела)';
   }
+  return { label, raw: d };
+}
 
+// ===== ПОКИНУТІ КОШИКИ =====
+// Як тільки клієнт ввів телефон у формі замовлення (і кошик не порожній),
+// через паузу в наборі відправляємо чернетку на сервер. Якщо він таки
+// оформить замовлення — чернетка позначається виконаною.
+let _abandonedCartTimer = null;
+let _lastAbandonedCartSig = '';
+
+function scheduleAbandonedCartCheck() {
+  clearTimeout(_abandonedCartTimer);
+  _abandonedCartTimer = setTimeout(sendAbandonedCartDraft, 2500);
+}
+
+function sendAbandonedCartDraft() {
+  const phoneEl = document.getElementById('order-phone');
+  if (!phoneEl) return;
+  const phone = phoneEl.value.trim();
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 9) return; // ще не схоже на повний номер
+  if (!cart.length) return;
+
+  const nameEl = document.getElementById('order-name');
+  const name = nameEl ? nameEl.value.trim() : '';
+  const items = cart.map(i => ({ name: i.name, size: i.size, qty: i.qty, price: i.price }));
+  const total = cartTotal();
+
+  const sig = digits + '|' + JSON.stringify(items) + '|' + name;
+  if (sig === _lastAbandonedCartSig) return; // нічого не змінилось
+  _lastAbandonedCartSig = sig;
+
+  const src = getOrderSource();
+  fetch(SOMNIUM_API + '/abandoned-cart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, name, items, total, source: src.label })
+  }).catch(() => {});
+}
+
+function resolveAbandonedCart(phone) {
+  if (!phone) return;
+  fetch(SOMNIUM_API + '/abandoned-cart-resolve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone })
+  }).catch(() => {});
+}
+
+async function submitOrder() {
   const EMAILJS_SERVICE_ID  = 'service_frudcia';
   const EMAILJS_TEMPLATE_ID = 'template_ue4mw1k';
   const EMAILJS_PUBLIC_KEY  = '63NNJiFnk1Bb5RRhP';
@@ -4841,6 +4887,8 @@ async function submitOrder() {
     });
     const data = await res.json().catch(() => ({ ok: false }));
     if (!data.ok) throw new Error(data.error || 'Не вдалося надіслати замовлення');
+
+    resolveAbandonedCart(phone);
 
     if (email && EMAILJS_TEMPLATE_ID) {
       sendReceiptEmail({ orderNo, name, email, delivery, address, comment, items: cart.slice(), total, now,
@@ -5302,6 +5350,7 @@ function renderAdmin() {
       <button class="admin-btn primary" onclick="adminEdit(null)">+ Додати товар</button>
       <button class="admin-btn" onclick="renderReviewsAdmin()">⭐ Відгуки</button>
       <button class="admin-btn" onclick="renderLeads(true)">📋 Замовлення</button>
+      <button class="admin-btn" onclick="renderAbandonedCarts()">🛒 Покинуті кошики</button>
       <button class="admin-btn" onclick="exportSite()">💾 Зберегти у файл сайту</button>
       <button class="admin-btn danger" onclick="adminReset()">Скинути локальні зміни</button>
     </div>
@@ -5786,6 +5835,92 @@ async function leadPurge(id){
     _deletedLeads = backup;
     redrawDeletedLeadList();
     alert('Не вдалося видалити остаточно. Перевірте з\u02bcєднання.');
+  }
+}
+
+let _abandonedCarts = [];
+
+async function renderAbandonedCarts(){
+  const content = document.getElementById('admin-content');
+  const pw = getLeadsPassword();
+  if (pw === null) return;
+  content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderAdmin()">\u2190 Назад до товарів</button></div><div class="admin-body"><p style="color:var(--mid)">Завантаження\u2026</p></div>';
+  try {
+    const r = await fetch(SOMNIUM_API + '/abandoned-carts', { headers: leadsAuthHeaders() });
+    if (r.status === 401) {
+      sessionStorage.removeItem('somnium_leads_pw');
+      content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderAdmin()">\u2190 Назад до товарів</button><button class="admin-btn primary" onclick="renderAbandonedCarts()">\u21bb Спробувати ще раз</button></div><div class="admin-body"><p style="color:var(--terra)">Невірний пароль.</p></div>';
+      return;
+    }
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'err');
+    _abandonedCarts = j.carts || [];
+  } catch(e) {
+    content.innerHTML = '<div class="admin-toolbar"><button class="admin-btn" onclick="renderAdmin()">\u2190 Назад до товарів</button><button class="admin-btn" onclick="renderAbandonedCarts()">\u21bb Оновити</button></div><div class="admin-body"><p style="color:var(--terra)">Не вдалося завантажити. Перевірте з\u02bcєднання.</p></div>';
+    return;
+  }
+  buildAbandonedCartsShell();
+}
+
+function buildAbandonedCartsShell(){
+  const content = document.getElementById('admin-content');
+  content.innerHTML = `
+    <div class="admin-toolbar">
+      <button class="admin-btn" onclick="renderAdmin()">\u2190 Назад до товарів</button>
+      <button class="admin-btn" onclick="renderAbandonedCarts()">\u21bb Оновити</button>
+    </div>
+    <div class="admin-body">
+      <p style="color:var(--mid);font-size:13px;margin-bottom:10px">\ud83d\uded2 Клієнти, які ввели телефон, але не завершили замовлення \u2014 ${_abandonedCarts.length} шт. Можна зв\u02bcязатися з ними самостійно.</p>
+      <div id="abandoned-carts-list"></div>
+    </div>`;
+  redrawAbandonedCartsList();
+}
+
+function redrawAbandonedCartsList(){
+  const el = document.getElementById('abandoned-carts-list');
+  if (!el) return;
+  el.innerHTML = _abandonedCarts.map(c => {
+    const dt = new Date(c.updatedAt || c.createdAt).toLocaleString('uk',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const minsAgo = Math.round((Date.now() - (c.updatedAt || c.createdAt)) / 60000);
+    const agoLabel = minsAgo < 60 ? `${minsAgo} хв тому` : minsAgo < 1440 ? `${Math.round(minsAgo/60)} год тому` : `${Math.round(minsAgo/1440)} дн тому`;
+    const items = (c.items||[]).map(i => `${escHtml(i.name)} (${escHtml(i.size||'')}) \u00d7${i.qty}`).join('<br>');
+    return `<div style="background:#fff;border:1px solid #ECE7E0;border-radius:12px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+        <div style="font-weight:700;color:var(--dark)">${escHtml(c.name || '\u2014')}</div>
+        <span style="font-size:11px;color:var(--mid)">${agoLabel} \u00b7 ${dt}</span>
+      </div>
+      <div style="font-size:14px;color:var(--dark);margin-top:4px">\ud83d\udcde <a href="tel:${escAttr(c.phone)}" style="color:var(--sage-dark);font-weight:600">${escHtml(c.phone)}</a></div>
+      <div style="font-size:13px;color:var(--dark);margin-top:6px">${items}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px">
+        <div style="font-weight:700;color:var(--dark)">${(Number(c.total)||0).toLocaleString('uk')} \u20b4</div>
+        <div style="display:flex;gap:6px">
+          <button class="admin-btn" style="padding:5px 10px;font-size:12px" onclick="abandonedCartCopyPhone('${escAttr(c.phone)}')">\ud83d\udccb Скопіювати номер</button>
+          <button class="admin-btn" style="padding:5px 10px;font-size:12px;color:var(--terra)" onclick="abandonedCartDismiss('${c.id}')">Приховати</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<p style="color:var(--mid)">Наразі немає покинутих кошиків \ud83c\udf89</p>';
+}
+
+function abandonedCartCopyPhone(phone){
+  navigator.clipboard.writeText(phone).then(() => cloudToast('\u2713 Номер скопійовано', true)).catch(() => {});
+}
+
+async function abandonedCartDismiss(id){
+  const backup = _abandonedCarts.slice();
+  _abandonedCarts = _abandonedCarts.filter(x => x.id !== id);
+  redrawAbandonedCartsList();
+  try {
+    const r = await fetch(SOMNIUM_API + '/abandoned-cart-dismiss', {
+      method: 'POST', headers: leadsAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ id })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error('fail');
+  } catch(e) {
+    _abandonedCarts = backup;
+    redrawAbandonedCartsList();
+    alert('Не вдалося приховати. Перевірте з\u02bcєднання.');
   }
 }
 
