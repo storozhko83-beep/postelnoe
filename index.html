@@ -78,13 +78,13 @@ gtag('config', 'G-781D3K73C0');
 <meta property="og:description" content="Купити постільну білизну з бавовни 100%. Комплекти: полуторний, двоспальний, євро, сімейний. Доставка по Україні.">
 <meta property="og:url" content="https://somniumua.com/">
 <meta property="og:locale" content="uk_UA">
-<meta property="og:image" content="https://res.cloudinary.com/daknwmkdg/image/upload/v1782633445/ChatGPT_Image_27_%D0%B8%D1%8E%D0%BD%D1%8F_2026_%D0%B3._15_35_58-3_pq7cha.png">
+<meta property="og:image" content="https://n6kvtc5vx8qd0fwm.public.blob.vercel-storage.com/somnium/hero/hero-main.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Купити постільну білизну з бавовни — Somnium">
 <meta name="twitter:description" content="Комплекти постільної білизни з бавовни 100%. Доставка по Україні.">
-<meta name="twitter:image" content="https://res.cloudinary.com/daknwmkdg/image/upload/v1782633445/ChatGPT_Image_27_%D0%B8%D1%8E%D0%BD%D1%8F_2026_%D0%B3._15_35_58-3_pq7cha.png">
+<meta name="twitter:image" content="https://n6kvtc5vx8qd0fwm.public.blob.vercel-storage.com/somnium/hero/hero-main.png">
 <meta name="keywords" content="постільна білизна, купити постільну білизну, комплект постільної білизни, бавовна, бязь, постільна білизна Україна, Somnium, полуторний, двоспальний, євро, сімейний">
 <!-- JSON-LD Structured Data -->
 <script type="application/ld+json">
@@ -1630,7 +1630,7 @@ nav.nav2 .nav-links a:hover{ color:var(--sage-dark); }
       <div class="hero2-rating"><span>Понад 3500 задоволених клієнтів</span><span class="stars">★★★★★</span><b>4.9/5</b></div>
     </div>
     <figure class="hero2-figure">
-      <img class="hero2-img" src="https://res.cloudinary.com/daknwmkdg/image/upload/v1782633445/ChatGPT_Image_27_%D0%B8%D1%8E%D0%BD%D1%8F_2026_%D0%B3._15_35_58-3_pq7cha.png" alt="Постільна білизна Somnium">
+      <img class="hero2-img" src="https://n6kvtc5vx8qd0fwm.public.blob.vercel-storage.com/somnium/hero/hero-main.png" alt="Постільна білизна Somnium">
       <div class="hero2-badge">
         <span class="b-from">від</span>
         <span class="b-price" id="hero-badge-price">890 ₴</span>
@@ -3656,9 +3656,17 @@ const ADMIN_PASS = 'somnium2025';
 /* ============ Хмарна база товарів (live-оновлення для всіх) ============ */
 const SOMNIUM_API = 'https://cool-wolf-666.eu-west-1.convex.site';
 
-const CLOUDINARY_CLOUD = 'daknwmkdg';
-const CLOUDINARY_PRESET = 'somnium';
-const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;const SOMNIUM_WRITE_TOKEN = 'smn_491cad13c9180bf035503e79d0b40f3e';
+const SOMNIUM_UPLOAD_URL = SOMNIUM_API + '/upload-image';const SOMNIUM_WRITE_TOKEN = 'smn_491cad13c9180bf035503e79d0b40f3e';
+
+// Вантажить файл у Vercel Blob через Convex (той самий сховище, що й CRM).
+function uploadToBlob(file, folder) {
+  const filename = folder + '/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '-' + file.name;
+  return fetch(SOMNIUM_UPLOAD_URL + '?filename=' + encodeURIComponent(filename), {
+    method: 'POST',
+    headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-Write-Token': SOMNIUM_WRITE_TOKEN },
+    body: file
+  }).then(r => r.json()).then(d => d.url || null).catch(() => null);
+}
 
 function cloudToast(msg, ok) {
   let el = document.getElementById('cloud-toast');
@@ -6143,21 +6151,14 @@ function renderReviewPhotoPrev(r) {
 function reviewPhotoPick(ev) {
   const file = (ev.target.files || [])[0];
   if (!file) return;
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
-  fd.append('folder', 'somnium/reviews');
-  fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(data => {
-      if (data.secure_url) {
-        _reviewPhoto = data.secure_url;
-        renderReviewPhotoPrev();
-      } else {
-        alert('Помилка завантаження фото відгуку.');
-      }
-    })
-    .catch(() => alert('Помилка завантаження. Перевірте інтернет.'));
+  uploadToBlob(file, 'somnium/reviews').then(url => {
+    if (url) {
+      _reviewPhoto = url;
+      renderReviewPhotoPrev();
+    } else {
+      alert('Помилка завантаження фото відгуку.');
+    }
+  });
   ev.target.value = '';
 }
 function reviewPhotoRemove() {
@@ -6229,35 +6230,10 @@ function adminPhotoPick(ev) {
   const files = Array.from(ev.target.files || []);
   if (!files.length) return;
   if (!Array.isArray(_adminPhotos)) _adminPhotos = [];
-  const slots = new Array(files.length);
-  let pending = files.length;
-  files.forEach((file, idx) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('upload_preset', CLOUDINARY_PRESET);
-    fd.append('folder', 'somnium/products');
-    fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: fd })
-      .then(r => r.json())
-      .then(data => {
-        if (data.secure_url) {
-          slots[idx] = data.secure_url;
-        } else {
-          console.error('Cloudinary upload error:', data);
-          alert('Помилка завантаження фото. Спробуйте ще раз.');
-        }
-        if (--pending === 0) {
-          slots.forEach(s => { if (s) _adminPhotos.push(s); });
-          renderAdminPhotos();
-        }
-      })
-      .catch(err => {
-        console.error('Upload failed:', err);
-        alert('Помилка завантаження фото. Перевірте інтернет.');
-        if (--pending === 0) {
-          slots.forEach(s => { if (s) _adminPhotos.push(s); });
-          renderAdminPhotos();
-        }
-      });
+  Promise.all(files.map(file => uploadToBlob(file, 'somnium/products'))).then(urls => {
+    urls.forEach(u => { if (u) _adminPhotos.push(u); });
+    renderAdminPhotos();
+    if (urls.some(u => !u)) alert('Помилка завантаження фото. Спробуйте ще раз.');
   });
   ev.target.value = '';
 }
